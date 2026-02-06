@@ -34,7 +34,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[origin.strip() for origin in config.CORS_ORIGINS.split(",")],
+    allow_origins=["https://https://main.d1j1xagueqmavc.amplifyapp.com/"],  # Your Amplify URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
