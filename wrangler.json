@@ -2,5 +2,6 @@
   "name": "whoishiring",
   "account_id": "667abf4c0303cdd1940e5d4b5dcb3fdc",
   "workers_dev": true,
-  "main": "dist/worker.js"
+  "main": "dist/worker.js",
+  "compatibility_date":"2026-02-06"
 }
