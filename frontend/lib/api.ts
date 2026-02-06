@@ -173,7 +173,6 @@ export const recallPinnedListings = async () => {
     const base = {
       saved_id: entry.saved_id ?? entry.id,
       job_id: entry.job_posting_id ?? posting.job_id ?? entry.job_id,
-      hnItemId: posting.hn_item_id ?? entry.hn_item_id,
       ...mapJobToListing(posting),
     };
     const { roles, cleaned } = extractRolesFromSummary(base.description);
