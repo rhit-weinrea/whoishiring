@@ -1,7 +1,8 @@
 // Custom network bridge with session persistence
 const VAULT_KEY = 'hn_session_vault';
-const API_ROOT = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8000/api/v1');
-
+const API_ROOT = process.env.NEXT_PUBLIC_API_URL 
+  ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1`
+  : (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8000/api/v1');
 const resolveRemoteFlag = (remoteStatus?: string | boolean) => {
   if (typeof remoteStatus === 'boolean') return remoteStatus;
   if (!remoteStatus) return false;
