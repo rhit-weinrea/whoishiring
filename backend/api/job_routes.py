@@ -4,8 +4,7 @@ from sqlalchemy import select, or_, and_
 from typing import List, Optional
 from backend.core.database_engine import acquire_db_session
 from backend.data_models.schemas import JobData
-from backend.data_models.models import UserAccount, JobPosting
-from backend.utilities.authentication import extract_current_user
+from backend.data_models.models import JobPosting
 from backend.utilities.location import normalize_location
 
 job_api = APIRouter(prefix="/jobs", tags=["Job Postings"])
@@ -20,7 +19,6 @@ async def browse_postings(
     tech_filter: Optional[str] = Query(None),
     company_search: Optional[str] = Query(None),
     session: AsyncSession = Depends(acquire_db_session),
-    account: UserAccount = Depends(extract_current_user)
 ):
     stmt = select(JobPosting)
     
@@ -55,7 +53,6 @@ async def browse_postings(
 async def fetch_job_details(
     job_id: int,
     session: AsyncSession = Depends(acquire_db_session),
-    account: UserAccount = Depends(extract_current_user)
 ):
     stmt = select(JobPosting).where(JobPosting.job_id == job_id)
     result = await session.execute(stmt)
@@ -76,7 +73,6 @@ async def search_text(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     session: AsyncSession = Depends(acquire_db_session),
-    account: UserAccount = Depends(extract_current_user)
 ):
     pattern = f"%{search_term}%"
     

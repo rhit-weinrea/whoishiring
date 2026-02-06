@@ -4,7 +4,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { terminateSession } from '@/lib/api';
 
-export default function NavigationBeam() {
+type NavigationBeamProps = {
+  isGuest?: boolean;
+};
+
+export default function NavigationBeam({ isGuest = false }: NavigationBeamProps) {
   const activePath = usePathname();
 
   const executeLogout = () => {
@@ -12,11 +16,13 @@ export default function NavigationBeam() {
     window.location.href = '/';
   };
 
-  const linkRegistry = [
-    { path: '/dashboard', text: 'Listings', icon: 'bi-list' },
-    { path: '/dashboard/pinned', text: 'Pinned', icon: 'bi-star' },
-    { path: '/dashboard/profile', text: 'Profile', icon: 'bi-gear' },
-  ];
+  const linkRegistry = isGuest
+    ? [{ path: '/dashboard', text: 'Listings', icon: 'bi-list' }]
+    : [
+        { path: '/dashboard', text: 'Listings', icon: 'bi-list' },
+        { path: '/dashboard/pinned', text: 'Pinned', icon: 'bi-star' },
+        { path: '/dashboard/profile', text: 'Profile', icon: 'bi-gear' },
+      ];
 
   return (
     <nav className="bg-slate-grey-900 border-b-2 border-smoky-rose-500">
@@ -50,15 +56,27 @@ export default function NavigationBeam() {
               );
             })}
 
-            <button
-              onClick={executeLogout}
-              className="ml-4 px-4 py-2 bg-transparent text-white rounded-lg font-bold hover:bg-slate-grey-800 transition-all border-2 border-smoky-rose-500"
-            >
-              <span className="inline-flex items-center gap-2">
-                <i className="bi bi-box-arrow-right" aria-hidden="true" />
-                Logout
-              </span>
-            </button>
+            {isGuest ? (
+              <Link
+                href="/"
+                className="ml-4 px-4 py-2 bg-smoky-rose-500 text-white rounded-lg font-bold hover:bg-smoky-rose-600 transition-all border-2 border-smoky-rose-500"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <i className="bi bi-box-arrow-in-right" aria-hidden="true" />
+                  Sign In
+                </span>
+              </Link>
+            ) : (
+              <button
+                onClick={executeLogout}
+                className="ml-4 px-4 py-2 bg-transparent text-white rounded-lg font-bold hover:bg-slate-grey-800 transition-all border-2 border-smoky-rose-500"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <i className="bi bi-box-arrow-right" aria-hidden="true" />
+                  Logout
+                </span>
+              </button>
+            )}
           </div>
         </div>
       </div>

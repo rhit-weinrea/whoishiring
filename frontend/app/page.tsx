@@ -27,9 +27,19 @@ export default function WelcomeZone() {
           </div>
           
           <p className="text-xl text-slate-grey-200 leading-relaxed">
-            Discover exceptional career opportunities curated from Hacker News. 
+            Discover exceptional career opportunities curated from Hacker News.
             Connect with innovative companies seeking talented individuals.
           </p>
+
+          <button
+            onClick={() => routeController.push('/dashboard')}
+            className="mt-4 px-8 py-3 bg-transparent text-white rounded-lg font-bold hover:bg-slate-grey-800 transition-all border-2 border-smoky-rose-500 text-lg"
+          >
+            <span className="inline-flex items-center gap-2">
+              <i className="bi bi-eye" aria-hidden="true" />
+              Browse as Guest
+            </span>
+          </button>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
             <div className="bg-transparent rounded-lg p-4 border-2 border-slate-grey-700">

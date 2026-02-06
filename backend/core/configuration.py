@@ -15,7 +15,7 @@ class EnvironmentConfig(BaseSettings):
     APP_NAME: str = "HN Job Board API"
     APP_VERSION: str = "1.0.0"
     DEBUG_MODE: bool = True
-    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173"
+    CORS_ORIGINS: str = "https://main.d1j1xagueqmavc.amplifyapp.com,http://localhost:3000,http://localhost:5173"
     ADMIN_API_KEY: str = "default_value"
     GEOCODER_USER_AGENT: str = "hn-job-board"
     SMTP_HOST: str | None = None

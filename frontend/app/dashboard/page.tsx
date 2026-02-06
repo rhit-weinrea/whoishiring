@@ -27,22 +27,24 @@ export default function ListingBrowser() {
   const [pinnedMap, setPinnedMap] = useState<Map<number, number>>(new Map());
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [faultMessage, setFaultMessage] = useState('');
+  const [isGuest, setIsGuest] = useState(false);
   const routeController = useRouter();
 
   useEffect(() => {
-    verifySessionAndLoad();
+    initializePage();
   }, []);
 
-  const verifySessionAndLoad = async () => {
+  const initializePage = async () => {
     const sessionTicket = typeof window !== 'undefined' ? localStorage.getItem('hn_session_vault') : null;
-    
-    if (!sessionTicket) {
-      routeController.push('/');
-      return;
-    }
 
-    await loadListingsData();
-    await loadPinnedData();
+    if (!sessionTicket) {
+      setIsGuest(true);
+      await loadListingsData();
+    } else {
+      setIsGuest(false);
+      await loadListingsData();
+      await loadPinnedData();
+    }
   };
 
   const loadListingsData = async (criteria?: any) => {
@@ -96,6 +98,7 @@ export default function ListingBrowser() {
   };
 
   const executePinToggle = async (listingId: number) => {
+    if (isGuest) return;
     try {
       if (pinnedSet.has(listingId)) {
         const savedId = pinnedMap.get(listingId);
@@ -136,7 +139,7 @@ export default function ListingBrowser() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
-      <NavigationBeam />
+      <NavigationBeam isGuest={isGuest} />
       
       <main className="container mx-auto px-6 py-8">
         <div className="mb-8">
@@ -183,7 +186,7 @@ export default function ListingBrowser() {
               <EmploymentCard
                 key={`${listing.id}-${listing.title}`}
                 listing={listing}
-                onPinToggle={executePinToggle}
+                onPinToggle={isGuest ? undefined : executePinToggle}
                 isPinned={pinnedSet.has(listing.id)}
               />
             ))}
