@@ -1,0 +1,50 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Node
+node_modules/
+
+# Build
+build/
+dist/
+frontend/.next/
+frontend/out/
+
+# Logs
+*.log
+
+# Environment and secrets
+.env
+.env.*
+backend/.env
+backend/.env.*
+backend/.env.example
+
+# Database
+*.sqlite
+*.db
+*.bak
+*.sql
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# Misc
+*.swp
+*.swo
+
+# Ignore test coverage
+htmlcov/
+.coverage
+coverage.xml
+
+# Ignore frontend build artifacts
+frontend/.turbo/

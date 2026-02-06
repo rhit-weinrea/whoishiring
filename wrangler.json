@@ -1,0 +1,10 @@
+{
+  "name": "whoishiring",
+  "account_id": "667abf4c0303cdd1940e5d4b5dcb3fdc",
+  "workers_dev": true,
+  "main": "dist/worker.js",
+  "build": {
+    "command": "npm run build",
+    "cwd": "backend"
+  }
+}
