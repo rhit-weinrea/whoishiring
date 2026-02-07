@@ -21,7 +21,7 @@ type EmploymentCardProps = {
 };
 
 export default function EmploymentCard({ listing, onPinToggle, isPinned }: EmploymentCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  // Expansion removed; description always shown
 
   const extractApplyEmail = (text: string) => {
     const reversedMatch = text.match(/([\w.+-]+@[\w.-]+\.[A-Za-z]{2,})\s*\(reversed\)/i);
@@ -95,16 +95,9 @@ export default function EmploymentCard({ listing, onPinToggle, isPinned }: Emplo
               <i className="bi bi-building text-[var(--foreground)]" aria-hidden="true" />
               {listing.company}
             </span>
-            <button
-              type="button"
-              onClick={() => setIsExpanded(prev => !prev)}
-              className="text-left"
-              aria-expanded={isExpanded}
-            >
-              <h3 className="text-lg font-semibold text-[var(--muted)] group-hover:text-smoky-rose-500 transition-colors">
-                {listing.title}
-              </h3>
-            </button>
+            <h3 className="text-lg font-semibold text-[var(--muted)] group-hover:text-smoky-rose-500 transition-colors">
+              {listing.title}
+            </h3>
           </div>
 
           <div className="flex items-center gap-3 text-sm text-[var(--muted)]">
@@ -141,7 +134,7 @@ export default function EmploymentCard({ listing, onPinToggle, isPinned }: Emplo
         )}
       </div>
 
-      <p className={`text-[var(--muted)] text-sm leading-relaxed mb-4 ${isExpanded ? '' : 'line-clamp-8'}`}>
+      <p className="text-[var(--muted)] text-sm leading-relaxed mb-4">
         {cleanedDescription}
       </p>
 
