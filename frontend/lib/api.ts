@@ -69,8 +69,12 @@ class NetworkBridge {
   }
 
   async transmit(endpoint: string, verb: string, cargo?: unknown): Promise<any> {
-    const headerBag: Record<string, string> = { 'Content-Type': 'application/json' };
-    
+    const headerBag: Record<string, string> = {};
+
+    if (verb !== 'GET') {
+      headerBag['Content-Type'] = 'application/json';
+    }
+
     if (this.sessionVault) {
       headerBag['Authorization'] = `Bearer ${this.sessionVault}`;
     }
