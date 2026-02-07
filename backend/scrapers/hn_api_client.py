@@ -76,23 +76,50 @@ class HNAPIConnector:
         thread_data = await self.fetch_item_data(thread_id)
         if not thread_data:
             return []
-        
+
         comment_ids = thread_data.get("kids", [])
         all_comments = []
-        
+
         batch_size = 10
         for idx in range(0, len(comment_ids), batch_size):
             batch = comment_ids[idx:idx + batch_size]
             tasks = [self.fetch_item_data(str(cid)) for cid in batch]
             results = await asyncio.gather(*tasks)
-            
+
             for comment in results:
                 if not self.is_job_posting_comment(comment, thread_id):
                     continue
                 all_comments.append(comment)
-            
+
             await asyncio.sleep(0.5)
-        
+
+        return all_comments
+
+    async def fetch_new_comments(self, thread_id: str, known_ids: set) -> List[Dict]:
+        """Fetch only comments whose IDs are not in known_ids."""
+        thread_data = await self.fetch_item_data(thread_id)
+        if not thread_data:
+            return []
+
+        comment_ids = thread_data.get("kids", [])
+        new_ids = [cid for cid in comment_ids if str(cid) not in known_ids]
+
+        if not new_ids:
+            return []
+
+        all_comments = []
+        batch_size = 10
+        for idx in range(0, len(new_ids), batch_size):
+            batch = new_ids[idx:idx + batch_size]
+            tasks = [self.fetch_item_data(str(cid)) for cid in batch]
+            results = await asyncio.gather(*tasks)
+
+            for comment in results:
+                if comment and self.is_job_posting_comment(comment, thread_id):
+                    all_comments.append(comment)
+
+            await asyncio.sleep(0.5)
+
         return all_comments
 
     async def fetch_thread_by_id(self, thread_id: str) -> Optional[Dict]:

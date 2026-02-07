@@ -5,13 +5,15 @@
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
 :root {
-  --background: #ffffff;
+  --background: #e8e8e8;
+  --surface: #f5f6fa;
   --foreground: #020617;
   --outline: #cbd5e1;
 }
 
 .dark {
   --background: #161b1d;
+  --surface: #23282b;
   --foreground: #f1f3f4;
   --outline: #374151;
 }
@@ -24,7 +26,7 @@ body {
 .box, .bordered {
   border-color: var(--outline);
   color: var(--foreground);
-  background: var(--background);
+  background: var(--surface);
 }
 
 @layer utilities {

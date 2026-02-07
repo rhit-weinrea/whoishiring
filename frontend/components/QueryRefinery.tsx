@@ -42,7 +42,7 @@ export default function QueryRefinery({ onCriteriaUpdate }: QueryRefineryProps) 
   };
 
   return (
-    <div className="bg-[var(--background)] rounded-xl p-6 border-2 border-[var(--outline)] mb-8">
+    <div className="box rounded-xl p-6 border-2 border-[var(--outline)] mb-8">
       <h3 className="text-lg font-black text-[var(--foreground)] mb-4 flex items-center gap-2">
         <i className="bi bi-funnel text-[var(--foreground)]" aria-hidden="true" />
         Query Refinery

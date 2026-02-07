@@ -87,7 +87,7 @@ export default function EmploymentCard({ listing, onPinToggle, isPinned }: Emplo
   };
 
   return (
-    <div className="bg-[var(--background)] rounded-xl p-8 border-2 border-[var(--outline)] hover:border-smoky-rose-500 transition-all duration-300 group">
+    <div className="box rounded-xl p-8 border-2 border-[var(--outline)] hover:border-smoky-rose-500 transition-all duration-300 group">
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
           <div className="flex flex-col gap-1">

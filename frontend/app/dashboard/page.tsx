@@ -153,7 +153,7 @@ export default function ListingBrowser() {
             <i className="bi bi-list" aria-hidden="true" />
             Browse Listings
           </h2>
-          <p style={{ color: 'var(--outline)' }}>
+          <p style={{ color: 'var(--foreground)' }}>
             Discover opportunities from Hacker News community
           </p>
         </div>
@@ -194,7 +194,9 @@ export default function ListingBrowser() {
             </select>
             <span>per page</span>
           </div>
+          
         </div>
+
 
         {isLoadingData ? (
           <div className="flex justify-center items-center h-64">

@@ -10,19 +10,22 @@ from backend.api.saved_jobs_routes import bookmark_api
 from backend.api.scraper_routes import scraper_api
 from backend.api.location_routes import location_api
 from backend.api.notification_routes import notification_api
+from backend.utilities.scheduler import start_scheduler, stop_scheduler
 
 config = fetch_environment_config()
 
 
 @asynccontextmanager
 async def app_lifespan(app: FastAPI):
-    print("🚀 Initializing HN Job Board API...")
+    print("Initializing HN Job Board API...")
     await setup_database_schema()
-    print("✅ Database ready")
+    print("Database ready")
+    start_scheduler()
     yield
-    print("🛑 Shutting down...")
+    print("Shutting down...")
+    stop_scheduler()
     await teardown_database()
-    print("✅ Cleanup complete")
+    print("Cleanup complete")
 
 
 app = FastAPI(
