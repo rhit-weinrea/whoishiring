@@ -73,9 +73,18 @@ export default function ListingBrowser() {
       setListings(filtered);
       setTotalJobs(filtered.length);
       setTotalPages(Math.ceil(filtered.length / numJobsPerPage));
+      if (typeof window !== 'undefined') sessionStorage.removeItem('hn_reload_count');
     } catch (fault) {
-      setFaultMessage('Data retrieval fault. Retry suggested.');
       console.error(fault);
+      if (!criteria && typeof window !== 'undefined') {
+        const retries = Number(sessionStorage.getItem('hn_reload_count') || '0');
+        if (retries < 2) {
+          sessionStorage.setItem('hn_reload_count', String(retries + 1));
+          window.location.reload();
+          return;
+        }
+      }
+      setFaultMessage('Data retrieval fault. Retry suggested.');
     } finally {
       setIsLoadingData(false);
     }
