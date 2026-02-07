@@ -91,8 +91,12 @@ class JobScrapeOrchestrator:
                 existing_result = await session.execute(existing_stmt)
                 existing_job = existing_result.scalar_one_or_none()
                 if existing_job and not force:
+                    print(f"Skipping job {comment_id} (already exists in DB, use force to update)")
                     continue
-                
+                if existing_job and force:
+                    print(f"Re-parsing and updating existing job {comment_id}")
+                if not existing_job:
+                    print(f"Adding new job {comment_id}")
                 print(f"Processing job {comment_id}...")
                 if parse:
                     parsed = await self.ai_parser.parse_job_content(cleaned_text)

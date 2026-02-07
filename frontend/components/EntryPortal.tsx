@@ -50,7 +50,7 @@ export default function EntryPortal({ onAuthenticated, toggleMode }: EntryPortal
       <form onSubmit={processAuthentication} className="space-y-5">
         <div className="relative">
           <label htmlFor="mail-entry" className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
-            Electronic Mail
+            Email
           </label>
           <input
             id="mail-entry"
@@ -65,7 +65,7 @@ export default function EntryPortal({ onAuthenticated, toggleMode }: EntryPortal
 
         <div className="relative">
           <label htmlFor="secret-entry" className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
-            Secret Code
+            Password
           </label>
           <input
             id="secret-entry"

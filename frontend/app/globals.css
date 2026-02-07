@@ -7,12 +7,24 @@
 :root {
   --background: #ffffff;
   --foreground: #020617;
+  --outline: #cbd5e1;
 }
 
+.dark {
+  --background: #161b1d;
+  --foreground: #f1f3f4;
+  --outline: #374151;
+}
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+.box, .bordered {
+  border-color: var(--outline);
+  color: var(--foreground);
+  background: var(--background);
 }
 
 @layer utilities {

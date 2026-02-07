@@ -1,83 +1,110 @@
-from passlib.context import CryptContext
-from jose import jwt, JWTError
+import hashlib
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import OAuth2PasswordBearer
+from jose import jwt, JWTError
+from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_
-from backend.core.configuration import fetch_environment_config
+from sqlalchemy import select
+
 from backend.core.database_engine import acquire_db_session
 from backend.data_models.models import UserAccount
+from backend.core.settings import settings
 
-config = fetch_environment_config()
+
+# ------------------------------------------------------------------
+# Password hashing (bcrypt-safe, no length limit)
+# ------------------------------------------------------------------
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-bearer_scheme = HTTPBearer()
 
 
-def encrypt_password(raw_password: str) -> str:
-    return pwd_context.hash(raw_password)
+def _normalize_password(password: str) -> bytes:
+    return hashlib.sha256(password.encode("utf-8")).digest()
 
 
-def check_password(raw_password: str, encrypted: str) -> bool:
-    return pwd_context.verify(raw_password, encrypted)
+def encrypt_password(password: str) -> str:
+    normalized = _normalize_password(password)
+    return pwd_context.hash(normalized)
 
 
-def craft_access_token(payload: dict, expiry: Optional[timedelta] = None) -> str:
-    to_encode = payload.copy()
-    expire_at = datetime.now(timezone.utc) + (expiry or timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp": expire_at})
-    return jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
+def verify_password(password: str, hashed_password: str) -> bool:
+    normalized = _normalize_password(password)
+    return pwd_context.verify(normalized, hashed_password)
 
 
-def extract_token_data(token: str) -> Optional[dict]:
-    try:
-        return jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
-    except JWTError:
-        return None
+# ------------------------------------------------------------------
+# Authentication helpers
+# ------------------------------------------------------------------
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-async def validate_credentials(username: str, password: str, session: AsyncSession) -> Optional[UserAccount]:
-    stmt = select(UserAccount).where(
-        or_(UserAccount.username == username, UserAccount.email_address == username)
-    )
-    result = await session.execute(stmt)
-    account = result.scalar_one_or_none()
-    
-    if not account or not check_password(password, account.hashed_password):
-        return None
-    return account
-
-
-async def extract_current_user(
-    auth: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-    session: AsyncSession = Depends(acquire_db_session)
-) -> UserAccount:
-    auth_failure = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Authentication failed",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    
-    token_data = extract_token_data(auth.credentials)
-    if not token_data:
-        raise auth_failure
-    
-    username = token_data.get("sub")
-    if not username:
-        raise auth_failure
-    
+async def validate_credentials(
+    username: str,
+    password: str,
+    session: AsyncSession
+) -> Optional[UserAccount]:
     stmt = select(UserAccount).where(UserAccount.username == username)
     result = await session.execute(stmt)
     account = result.scalar_one_or_none()
-    
+
     if not account:
-        raise auth_failure
-    
-    if not account.is_active_user:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Account deactivated"
+        return None
+
+    if not verify_password(password, account.hashed_password):
+        return None
+
+    return account
+
+
+# ------------------------------------------------------------------
+# JWT handling
+# ------------------------------------------------------------------
+
+def craft_access_token(payload: dict) -> str:
+    to_encode = payload.copy()
+    expire = datetime.now(timezone.utc) + timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+    )
+    to_encode.update({"exp": expire})
+
+    return jwt.encode(
+        to_encode,
+        settings.SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM
+    )
+
+
+async def extract_current_user(
+    token: str = Depends(oauth2_scheme),
+    session: AsyncSession = Depends(acquire_db_session)
+) -> UserAccount:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    try:
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=[settings.JWT_ALGORITHM]
         )
-    
+        username: str | None = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    stmt = select(UserAccount).where(UserAccount.username == username)
+    result = await session.execute(stmt)
+    account = result.scalar_one_or_none()
+
+    if not account:
+        raise credentials_exception
+
     return account

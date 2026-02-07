@@ -7,7 +7,6 @@ class UserRegistrationPayload(BaseModel):
     email_address: EmailStr
     username: str = Field(..., min_length=3, max_length=100)
     password: str = Field(..., min_length=8)
-    full_name: Optional[str] = None
 
 
 class UserLoginPayload(BaseModel):
@@ -24,7 +23,6 @@ class UserProfileData(BaseModel):
     user_id: int
     email_address: str
     username: str
-    full_name: Optional[str]
     is_active_user: bool
     created_timestamp: datetime
     last_login_timestamp: Optional[datetime]

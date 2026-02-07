@@ -40,37 +40,6 @@ export default function WelcomeZone() {
               Browse as Guest
             </span>
           </button>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-            <div className="bg-transparent rounded-lg p-4 border-2 border-slate-grey-700">
-              <div className="text-3xl mb-2">
-                <i className="bi bi-list-check" aria-hidden="true" />
-              </div>
-              <h3 className="font-bold mb-1">Curated Postings</h3>
-              <p className="text-sm text-gray-400">Selected from HN</p>
-            </div>
-            <div className="bg-transparent rounded-lg p-4 border-2 border-slate-grey-700">
-              <div className="text-3xl mb-2">
-                <i className="bi bi-search" aria-hidden="true" />
-              </div>
-              <h3 className="font-bold mb-1">Advanced Search</h3>
-              <p className="text-sm text-gray-400">Refine precisely</p>
-            </div>
-            <div className="bg-transparent rounded-lg p-4 border-2 border-slate-grey-700">
-              <div className="text-3xl mb-2">
-                <i className="bi bi-star" aria-hidden="true" />
-              </div>
-              <h3 className="font-bold mb-1">Pin Listings</h3>
-              <p className="text-sm text-gray-400">Track progress</p>
-            </div>
-            <div className="bg-transparent rounded-lg p-4 border-2 border-slate-grey-700">
-              <div className="text-3xl mb-2">
-                <i className="bi bi-bell" aria-hidden="true" />
-              </div>
-              <h3 className="font-bold mb-1">Custom Alerts</h3>
-              <p className="text-sm text-gray-400">Stay updated</p>
-            </div>
-          </div>
         </div>
 
         <div className="flex-1 w-full">

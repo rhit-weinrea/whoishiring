@@ -1,4 +1,9 @@
-from __future__ import annotations
+from __future__ import annotations      
+from datetime import datetime, timedelta, timezone
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, and_
+from backend.data_models.models import UserAccount, UserJobPreferences, JobPosting
+
 
 from dataclasses import dataclass
 from email.message import EmailMessage
@@ -7,6 +12,33 @@ from typing import Iterable, List
 
 from backend.core.configuration import fetch_environment_config
 from backend.data_models.models import JobPosting, UserJobPreferences
+
+async def send_daily_notifications(session: AsyncSession):
+    # Get all users with notifications enabled
+    users_stmt = select(UserAccount).where(UserAccount.is_active_user == True)
+    users = (await session.execute(users_stmt)).scalars().all()
+    now = datetime.now(timezone.utc)
+    for user in users:
+        prefs_stmt = select(UserJobPreferences).where(UserJobPreferences.user_account_id == user.user_id)
+        prefs = (await session.execute(prefs_stmt)).scalar_one_or_none()
+        if not prefs or not prefs.notification_enabled:
+            continue
+        # Only send if not notified today
+        last_notified = prefs.last_notified_timestamp
+        if last_notified and last_notified.date() == now.date():
+            continue
+        # Find new jobs since last notification
+        jobs_stmt = select(JobPosting).where(
+            JobPosting.parsed_timestamp > (last_notified or now - timedelta(days=1))
+        )
+        jobs = (await session.execute(jobs_stmt)).scalars().all()
+        matched_jobs = [job for job in jobs if job_matches_preferences(job, prefs)]
+        if matched_jobs:
+            send_notification_email(user.email_address, matched_jobs)
+            prefs.last_notified_timestamp = now
+            await session.commit()
+            print(f"Sent notification to {user.email_address} for {len(matched_jobs)} jobs.")
+
 
 
 @dataclass

@@ -45,7 +45,6 @@ async def create_account(
         email_address=payload.email_address,
         username=payload.username,
         hashed_password=encrypt_password(payload.password),
-        full_name=payload.full_name,
         is_active_user=True
     )
     
