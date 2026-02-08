@@ -75,13 +75,13 @@ export default function AccountRegistry({ onAccountCreated, returnToEntry }: Reg
             onChange={(evt: ChangeEvent<HTMLInputElement>) => setAliasField(evt.target.value)}
             required
             minLength={3}
-            className="w-full px-4 py-3 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all bg-[var(--background)] text-[var(--foreground)]"
+            className="w-full px-4 py-3 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all bg-[var(--background)] text-black"
             placeholder="cyberhacker99"
           />
         </div>
 
         <div className="relative">
-          <label htmlFor="registry-mail" className="block text-xs font-bold text-[var(--foreground)] mb-2 uppercase tracking-wide">
+          <label htmlFor="registry-mail" className="block text-xs font-bold text-black mb-2 uppercase tracking-wide">
             Email
           </label>
           <input
@@ -90,13 +90,13 @@ export default function AccountRegistry({ onAccountCreated, returnToEntry }: Reg
             value={mailField}
             onChange={(evt: ChangeEvent<HTMLInputElement>) => setMailField(evt.target.value)}
             required
-            className="w-full px-4 py-3 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all bg-[var(--background)] text-[var(--foreground)]"
+            className="w-full px-4 py-3 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all bg-[var(--background)] text-black"
             placeholder="name@domain.example"
           />
         </div>
 
         <div className="relative">
-          <label htmlFor="secret-code" className="block text-xs font-bold text-[var(--foreground)] mb-2 uppercase tracking-wide">
+          <label htmlFor="secret-code" className="block text-xs font-bold text-black mb-2 uppercase tracking-wide">
             Password
           </label>
           <input
@@ -106,13 +106,13 @@ export default function AccountRegistry({ onAccountCreated, returnToEntry }: Reg
             onChange={(evt: ChangeEvent<HTMLInputElement>) => setCodeField(evt.target.value)}
             required
             minLength={6}
-            className="w-full px-4 py-3 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all bg-[var(--background)] text-[var(--foreground)]"
+            className="w-full px-4 py-3 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all bg-[var(--background)] text-black"
             placeholder="Min 6 chars required"
           />
         </div>
 
         <div className="relative">
-          <label htmlFor="verify-code" className="block text-xs font-bold text-[var(--foreground)] mb-2 uppercase tracking-wide">
+          <label htmlFor="verify-code" className="block text-xs font-bold text-black mb-2 uppercase tracking-wide">
             Confirm Password
           </label>
           <input
@@ -122,7 +122,7 @@ export default function AccountRegistry({ onAccountCreated, returnToEntry }: Reg
             onChange={(evt: ChangeEvent<HTMLInputElement>) => setVerifyField(evt.target.value)}
             required
             minLength={6}
-            className="w-full px-4 py-3 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all bg-[var(--background)] text-[var(--foreground)]"
+            className="w-full px-4 py-3 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all bg-[var(--background)] text-black"
             placeholder="Repeat password"
           />
         </div>
