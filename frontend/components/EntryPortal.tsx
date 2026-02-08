@@ -50,16 +50,16 @@ export default function EntryPortal({ onAuthenticated, toggleMode }: EntryPortal
       <form onSubmit={processAuthentication} className="space-y-5">
         <div className="relative">
           <label htmlFor="mail-entry" className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
-            Email
+            Username
           </label>
           <input
             id="mail-entry"
-            type="email"
+            type="text"
             value={mailField}
             onChange={(evt: ChangeEvent<HTMLInputElement>) => setMailField(evt.target.value)}
             required
             className="w-full px-4 py-3 border-2 border-slate-grey-300 rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all bg-white"
-            placeholder="name@domain.example"
+            placeholder="Your username"
           />
         </div>
 
