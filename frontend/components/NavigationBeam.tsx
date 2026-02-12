@@ -61,24 +61,35 @@ export default function NavigationBeam({ isGuest = false }: NavigationBeamProps)
               );
             })}
 
-            {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              className="px-3 py-2 text-[var(--foreground)] bg-[var(--background)] rounded-lg transition-all hover:bg-[var(--muted-light)]"
-              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              <i className={`bi ${isDark ? 'bi-sun-fill' : 'bi-moon-fill'} text-lg`} aria-hidden="true" />
-            </button>
-
-            {/* Sign In / Logout */}
-            {isGuest ? (
-              <Link
-                href="/"
-                className="px-4 py-2 rounded-lg font-bold bg-[var(--background)] text-[var(--foreground)] hover:bg-[var(--muted-light)] transition-all"
-              >
-                <span className="inline-flex items-center gap-2">
-                  <i className="bi bi-box-arrow-in-right" aria-hidden="true" />
-                  Sign In
-                </span>
-              {/* Sign in / out button removed for now */}
-            ) : (
+                    {/* Theme toggle */}
+                    <button
+                      onClick={toggleTheme}
+                      className="px-3 py-2 text-[var(--foreground)] bg-[var(--background)] rounded-lg transition-all hover:bg-[var(--muted-light)]"
+                      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                    >
+                      <i className={`bi ${isDark ? 'bi-sun-fill' : 'bi-moon-fill'} text-lg`} aria-hidden="true" />
+                    </button>
+        
+                    {/* Sign In / Logout */}
+                    {/* {isGuest ? (
+                      <Link
+                        href="/login"
+                        className="px-4 py-2 rounded-lg font-bold bg-[var(--primary)] text-white hover:bg-[var(--primary-dark)] transition-all"
+                      >
+                        Sign In
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={executeLogout}
+                        className="px-4 py-2 rounded-lg font-bold bg-[var(--danger)] text-white hover:bg-[var(--danger-dark)] transition-all"
+                      >
+                        Logout
+                      </button> */}
+                   {/* // Note: The Sign In / Logout button is currently commented out as authentication flows are being finalized. It can be re-enabled once those flows are in place.)} */}
+                  </div>
+                </div>
+              </div>
+            </nav>
+            
+          );
+        }

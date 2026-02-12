@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, FormEvent, ChangeEvent } from 'react';
-import { authenticateViaCredentials } from '@/lib/api';
+import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+// import { authenticateViaCredentials } from '@/lib/api';
 
 type EntryPortalProps = {
   onAuthenticated: () => void;
