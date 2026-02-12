@@ -201,7 +201,6 @@ export const fetchProfileConfig = async () => {
     tech_keywords: data.preferred_tech_stack || [],
     remote_preference: data.remote_only || false,
     visa_sponsorship_only: data.visa_sponsorship_only || false,
-    email_alerts: data.notification_enabled || false,
   };
 };
 
@@ -211,7 +210,6 @@ export const persistProfileConfig = async (configuration: {
   tech_keywords?: string[];
   remote_preference?: boolean;
   visa_sponsorship_only?: boolean;
-  email_alerts?: boolean;
 }) => {
   return bridge.transmit('/preferences/my-preferences', 'PUT', {
     preferred_locations: configuration.locations,
@@ -219,7 +217,6 @@ export const persistProfileConfig = async (configuration: {
     remote_only: configuration.remote_preference ?? false,
     keywords_to_match: configuration.keywords ?? [],
     visa_sponsorship_only: configuration.visa_sponsorship_only ?? false,
-    notification_enabled: configuration.email_alerts ?? false,
   });
 };
 

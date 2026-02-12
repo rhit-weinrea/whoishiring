@@ -11,7 +11,6 @@ type ProfileConfig = {
   tech_keywords: string[];
   remote_preference: boolean;
   visa_sponsorship_only: boolean;
-  email_alerts: boolean;
 };
 
 export default function ProfileManager() {
@@ -21,7 +20,6 @@ export default function ProfileManager() {
     tech_keywords: [],
     remote_preference: false,
     visa_sponsorship_only: false,
-    email_alerts: false,
   });
   
   const [keywordBuffer, setKeywordBuffer] = useState('');
@@ -83,7 +81,6 @@ export default function ProfileManager() {
         tech_keywords: fetchedConfig.tech_keywords || [],
         remote_preference: fetchedConfig.remote_preference || false,
         visa_sponsorship_only: fetchedConfig.visa_sponsorship_only || false,
-        email_alerts: fetchedConfig.email_alerts || false,
       });
     } catch (fault) {
       console.error('Configuration retrieval fault:', fault);
@@ -395,18 +392,6 @@ export default function ProfileManager() {
               </span>
             </label>
 
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={configuration.email_alerts}
-                onChange={(evt) => setConfiguration({ ...configuration, email_alerts: evt.target.checked })}
-                className="w-6 h-6 text-smoky-rose-500 focus:ring-2 focus:ring-smoky-rose-200 rounded"
-              />
-              <span className="font-semibold text-gray-700 flex items-center gap-2">
-                <i className="bi bi-bell" aria-hidden="true" />
-                Enable job notifications
-              </span>
-            </label>
           </div>
 
           {/* Save Button */}
