@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, FormEvent, ChangeEvent } from 'react';
-import { forgeNewAccount } from '@/lib/api';
+// import { forgeNewAccount } from '@/lib/api';
 
 type RegistryProps = {
   onAccountCreated: () => void;
