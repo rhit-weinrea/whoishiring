@@ -133,10 +133,12 @@ export const queryEmploymentListings = async (criteria?: {
   distantWorkFlag?: boolean;
 }) => {
   const paramBag = new URLSearchParams();
+  console.log('queryEmploymentListings criteria:', criteria);
 
   if (criteria?.phraseQuery) {
     paramBag.append('search_term', criteria.phraseQuery);
     const data = await bridge.transmit(`/jobs/search/text?${paramBag.toString()}`, 'GET');
+    console.log('search/text results:', data);
     return data.map(mapJobToListing);
   }
 
@@ -146,15 +148,18 @@ export const queryEmploymentListings = async (criteria?: {
     const locationParams = new URLSearchParams();
     locationParams.append('location_query', criteria.territoryFilter);
     const locationData = await bridge.transmit(`/jobs/browse?${locationParams.toString()}`, 'GET');
+    console.log('location jobs:', locationData);
 
     // Fetch remote jobs
     const remoteParams = new URLSearchParams();
     remoteParams.append('remote_filter', 'remote');
     const remoteData = await bridge.transmit(`/jobs/browse?${remoteParams.toString()}`, 'GET');
+    console.log('remote jobs:', remoteData);
 
     // Merge and deduplicate by job id
     const allJobs = [...locationData, ...remoteData];
     const uniqueJobs = Array.from(new Map(allJobs.map(job => [job.job_id ?? job.id, job])).values());
+    console.log('merged unique jobs:', uniqueJobs);
     return uniqueJobs.flatMap((job: any) => {
       const base = mapJobToListing(job);
       const { roles, cleaned } = extractRolesFromSummary(base.description);
@@ -174,6 +179,7 @@ export const queryEmploymentListings = async (criteria?: {
 
   const querySegment = paramBag.toString() ? `?${paramBag.toString()}` : '';
   const data = await bridge.transmit(`/jobs/browse${querySegment}`, 'GET');
+  console.log('single filter jobs:', data);
   return data.flatMap((job: any) => {
     const base = mapJobToListing(job);
     const { roles, cleaned } = extractRolesFromSummary(base.description);
