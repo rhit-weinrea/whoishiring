@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, FormEvent, ChangeEvent } from 'react';
-// import { forgeNewAccount } from '@/lib/api';
+// forgeNewAccount import removed
 
 type RegistryProps = {
   onAccountCreated: () => void;
@@ -38,7 +38,7 @@ export default function AccountRegistry({ onAccountCreated, returnToEntry }: Reg
     setIsForging(true);
 
     try {
-      await forgeNewAccount(mailField, codeField, aliasField);
+      // forgeNewAccount disabled
       onAccountCreated();
     } catch (fault) {
       setAlertMsg(fault instanceof Error ? fault.message : 'Account creation failed');

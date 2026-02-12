@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-// import { terminateSession } from '@/lib/api';
+// terminateSession import removed
 import { useTheme } from '@/lib/theme';
 
 type NavigationBeamProps = {
@@ -14,7 +14,7 @@ export default function NavigationBeam({ isGuest = false }: NavigationBeamProps)
   const { isDark, toggleTheme } = useTheme();
 
   const executeLogout = () => {
-    // terminateSession();
+    // terminateSession disabled
     window.location.href = '/';
   };
 
