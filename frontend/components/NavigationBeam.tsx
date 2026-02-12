@@ -80,21 +80,5 @@ export default function NavigationBeam({ isGuest = false }: NavigationBeamProps)
                   <i className="bi bi-box-arrow-in-right" aria-hidden="true" />
                   Sign In
                 </span>
-              </Link>
+              {/* Sign in / out button removed for now */}
             ) : (
-              <button
-                onClick={executeLogout}
-                className="px-4 py-2 rounded-lg font-bold bg-[var(--background)] text-[var(--foreground)] hover:bg-[var(--muted-light)] transition-all"
-              >
-                <span className="inline-flex items-center gap-2">
-                  <i className="bi bi-box-arrow-right" aria-hidden="true" />
-                  Logout
-                </span>
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    </nav>
-  );
-}

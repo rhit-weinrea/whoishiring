@@ -120,18 +120,7 @@ export default function EmploymentCard({ listing, onPinToggle, isPinned }: Emplo
           </div>
         </div>
 
-        {onPinToggle && (
-          <button
-            onClick={() => onPinToggle(listing.id)}
-            className="ml-4 text-xl hover:scale-110 transition-transform"
-            aria-label={isPinned ? 'Unpin listing' : 'Pin listing'}
-          >
-            <i
-              className={`bi ${isPinned ? 'bi-star-fill' : 'bi-star'} text-[var(--foreground)]`}
-              aria-hidden="true"
-            />
-          </button>
-        )}
+          {/* Pin job button removed for now */}
       </div>
 
       <p className="text-[var(--muted)] text-sm leading-relaxed mb-4">

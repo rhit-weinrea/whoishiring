@@ -98,33 +98,33 @@ class NetworkBridge {
 
 const bridge = new NetworkBridge();
 
-// Credential operations
-export const authenticateViaCredentials = async (mailAddress: string, secretCode: string) => {
-  const outcome = await bridge.transmit('/auth/login', 'POST', { 
-    username: mailAddress, 
-    password: secretCode 
-  });
-  if (outcome.access_token) {
-    bridge.archiveSession(outcome.access_token);
-  }
-  return outcome;
-};
+// Credential operations (disabled for now)
+// export const authenticateViaCredentials = async (mailAddress: string, secretCode: string) => {
+//   const outcome = await bridge.transmit('/auth/login', 'POST', { 
+//     username: mailAddress, 
+//     password: secretCode 
+//   });
+//   if (outcome.access_token) {
+//     bridge.archiveSession(outcome.access_token);
+//   }
+//   return outcome;
+// };
 
-export const forgeNewAccount = async (mailAddress: string, secretCode: string, alias: string) => {
-  const outcome = await bridge.transmit('/auth/register', 'POST', { 
-    email_address: mailAddress, 
-    password: secretCode, 
-    username: alias 
-  });
-  if (outcome.access_token) {
-    bridge.archiveSession(outcome.access_token);
-  }
-  return outcome;
-};
+// export const forgeNewAccount = async (mailAddress: string, secretCode: string, alias: string) => {
+//   const outcome = await bridge.transmit('/auth/register', 'POST', { 
+//     email_address: mailAddress, 
+//     password: secretCode, 
+//     username: alias 
+//   });
+//   if (outcome.access_token) {
+//     bridge.archiveSession(outcome.access_token);
+//   }
+//   return outcome;
+// };
 
-export const terminateSession = (): void => {
-  bridge.eraseSession();
-};
+// export const terminateSession = (): void => {
+//   bridge.eraseSession();
+// };
 
 // Employment listing operations
 export const queryEmploymentListings = async (criteria?: {
