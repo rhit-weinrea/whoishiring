@@ -20,10 +20,11 @@ export default function QueryRefinery({ onCriteriaUpdate }: QueryRefineryProps) 
   const [techInput, setTechInput] = useState('');
 
   const deployFilters = () => {
+    // Always pass both filters if set
     onCriteriaUpdate({
       phraseQuery: phraseInput || undefined,
       territoryFilter: areaInput || undefined,
-      distantWorkFlag: distantBox ? true : undefined,
+      distantWorkFlag: distantBox || undefined,
       visaSponsorship: visaOnly,
       techKeywords: techInput
         .split(',')
