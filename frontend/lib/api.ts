@@ -140,6 +140,35 @@ export const queryEmploymentListings = async (criteria?: {
     return data.map(mapJobToListing);
   }
 
+  // If both location and remote are set, fetch both and merge results
+  if (criteria?.territoryFilter && criteria?.distantWorkFlag) {
+    // Fetch location jobs
+    const locationParams = new URLSearchParams();
+    locationParams.append('location_query', criteria.territoryFilter);
+    const locationData = await bridge.transmit(`/jobs/browse?${locationParams.toString()}`, 'GET');
+
+    // Fetch remote jobs
+    const remoteParams = new URLSearchParams();
+    remoteParams.append('remote_filter', 'remote');
+    const remoteData = await bridge.transmit(`/jobs/browse?${remoteParams.toString()}`, 'GET');
+
+    // Merge and deduplicate by job id
+    const allJobs = [...locationData, ...remoteData];
+    const uniqueJobs = Array.from(new Map(allJobs.map(job => [job.job_id ?? job.id, job])).values());
+    return uniqueJobs.flatMap((job: any) => {
+      const base = mapJobToListing(job);
+      const { roles, cleaned } = extractRolesFromSummary(base.description);
+      if (!roles.length) {
+        return [{ ...base, description: cleaned }];
+      }
+      return roles.map((role) => ({
+        ...base,
+        title: role,
+        description: cleaned,
+      }));
+    });
+  }
+
   if (criteria?.territoryFilter) paramBag.append('location_query', criteria.territoryFilter);
   if (criteria?.distantWorkFlag) paramBag.append('remote_filter', 'remote');
 
