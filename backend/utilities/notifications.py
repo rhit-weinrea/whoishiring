@@ -5,6 +5,7 @@ from sqlalchemy import select, and_
 from backend.data_models.models import UserAccount, UserJobPreferences, JobPosting
 
 
+import asyncio
 from dataclasses import dataclass
 from email.message import EmailMessage
 import smtplib
@@ -34,7 +35,7 @@ async def send_daily_notifications(session: AsyncSession):
         jobs = (await session.execute(jobs_stmt)).scalars().all()
         matched_jobs = [job for job in jobs if job_matches_preferences(job, prefs)]
         if matched_jobs:
-            send_notification_email(user.email_address, matched_jobs)
+            await send_notification_email(user.email_address, matched_jobs)
             prefs.last_notified_timestamp = now
             await session.commit()
             print(f"Sent notification to {user.email_address} for {len(matched_jobs)} jobs.")
@@ -100,7 +101,7 @@ def format_notification_email(jobs: List[JobPosting]) -> str:
     return "\n".join(lines).strip()
 
 
-def send_notification_email(recipient: str, jobs: List[JobPosting]) -> None:
+def _send_email_sync(recipient: str, jobs: List[JobPosting]) -> None:
     config = fetch_environment_config()
     if not config.SMTP_HOST or not config.SMTP_FROM_EMAIL:
         raise RuntimeError("SMTP settings are not configured.")
@@ -117,3 +118,45 @@ def send_notification_email(recipient: str, jobs: List[JobPosting]) -> None:
         if config.SMTP_USERNAME and config.SMTP_PASSWORD:
             smtp.login(config.SMTP_USERNAME, config.SMTP_PASSWORD)
         smtp.send_message(message)
+
+
+async def send_notification_email(recipient: str, jobs: List[JobPosting]) -> None:
+    await asyncio.to_thread(_send_email_sync, recipient, jobs)
+
+
+def _send_confirmation_sync(recipient: str, jobs: List[JobPosting]) -> None:
+    config = fetch_environment_config()
+    if not config.SMTP_HOST or not config.SMTP_FROM_EMAIL:
+        raise RuntimeError("SMTP settings are not configured.")
+
+    message = EmailMessage()
+    message["From"] = config.SMTP_FROM_EMAIL
+    message["To"] = recipient
+
+    if jobs:
+        message["Subject"] = f"Notifications enabled — {len(jobs)} matches found"
+        body = (
+            "You've enabled job notifications on Who Is Hiring.\n"
+            "You'll receive daily emails when new jobs match your preferences.\n\n"
+            + format_notification_email(jobs)
+        )
+    else:
+        message["Subject"] = "Notifications enabled — Who Is Hiring"
+        body = (
+            "You've enabled job notifications on Who Is Hiring.\n\n"
+            "You'll receive daily emails when new jobs match your preferences.\n"
+            "We'll notify you as soon as matching roles are posted."
+        )
+
+    message.set_content(body)
+
+    with smtplib.SMTP(config.SMTP_HOST, config.SMTP_PORT) as smtp:
+        if config.SMTP_USE_TLS:
+            smtp.starttls()
+        if config.SMTP_USERNAME and config.SMTP_PASSWORD:
+            smtp.login(config.SMTP_USERNAME, config.SMTP_PASSWORD)
+        smtp.send_message(message)
+
+
+async def send_confirmation_email(recipient: str, jobs: List[JobPosting]) -> None:
+    await asyncio.to_thread(_send_confirmation_sync, recipient, jobs)

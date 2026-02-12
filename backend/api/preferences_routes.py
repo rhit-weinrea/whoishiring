@@ -10,7 +10,7 @@ from backend.data_models.schemas import PreferencesPayload, PreferencesData
 from backend.data_models.models import UserAccount, UserJobPreferences, JobPosting
 from backend.utilities.authentication import extract_current_user
 from backend.utilities.location import normalize_location
-from backend.utilities.notifications import job_matches_preferences, send_notification_email
+from backend.utilities.notifications import job_matches_preferences, send_confirmation_email
 
 logger = logging.getLogger(__name__)
 
@@ -37,11 +37,8 @@ async def send_welcome_notification(user_id: int, email: str):
             if job_matches_preferences(j, prefs)
         ]
 
-        if jobs:
-            send_notification_email(email, jobs)
-            logger.info(f"Sent welcome notification to {email} with {len(jobs)} jobs")
-        else:
-            logger.info(f"No matching jobs for welcome notification to {email}")
+        await send_confirmation_email(email, jobs)
+        logger.info(f"Sent confirmation to {email} with {len(jobs)} matching jobs")
 
         prefs.last_notified_timestamp = datetime.now(timezone.utc)
         await session.commit()

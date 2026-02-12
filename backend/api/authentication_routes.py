@@ -20,7 +20,7 @@ from backend.utilities.authentication import (
 auth_api = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-@auth_api.post("/register", response_model=UserProfileData, status_code=status.HTTP_201_CREATED)
+@auth_api.post("/register", response_model=AuthTokenPayload, status_code=status.HTTP_201_CREATED)
 async def create_account(
     payload: UserRegistrationPayload,
     session: AsyncSession = Depends(acquire_db_session)
@@ -32,7 +32,7 @@ async def create_account(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered"
         )
-    
+
     username_stmt = select(UserAccount).where(UserAccount.username == payload.username)
     username_result = await session.execute(username_stmt)
     if username_result.scalar_one_or_none():
@@ -40,19 +40,20 @@ async def create_account(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username unavailable"
         )
-    
+
     account = UserAccount(
         email_address=payload.email_address,
         username=payload.username,
         hashed_password=encrypt_password(payload.password),
         is_active_user=True
     )
-    
+
     session.add(account)
     await session.commit()
     await session.refresh(account)
-    
-    return account
+
+    token = craft_access_token(payload={"sub": account.username})
+    return AuthTokenPayload(access_token=token, token_type="bearer")
 
 
 @auth_api.post("/login", response_model=AuthTokenPayload)

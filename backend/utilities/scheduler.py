@@ -93,13 +93,11 @@ async def run_scheduled_notifications():
 
             if jobs:
                 try:
-                    send_notification_email(account.email_address, jobs)
+                    await send_notification_email(account.email_address, jobs)
                     notified += 1
+                    prefs.last_notified_timestamp = datetime.now(timezone.utc)
                 except Exception as e:
                     logger.error(f"Failed to email {account.email_address}: {e}")
-                    continue
-
-            prefs.last_notified_timestamp = datetime.now(timezone.utc)
 
         await session.commit()
         logger.info(f"Scheduled notifications complete: {notified} users notified")

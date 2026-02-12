@@ -37,7 +37,7 @@ export default function NavigationBeam({ isGuest = false }: NavigationBeamProps)
           </div>
 
           {/* Navigation & actions */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6" style={{flexWrap: 'wrap'}}>
             {linkRegistry.map((entry) => {
               const isCurrentRoute = activePath === entry.path;
               const isListings = entry.text === 'Listings';

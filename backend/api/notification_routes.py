@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
@@ -8,6 +9,7 @@ from backend.core.database_engine import acquire_db_session
 from backend.data_models.models import UserAccount, UserJobPreferences, JobPosting
 from backend.utilities.notifications import job_matches_preferences, send_notification_email
 
+logger = logging.getLogger(__name__)
 config = fetch_environment_config()
 notification_api = APIRouter(prefix="/admin", tags=["Admin - Notifications"])
 
@@ -43,16 +45,12 @@ async def trigger_notifications(
             continue
 
         try:
-            send_notification_email(account.email_address, jobs)
+            await send_notification_email(account.email_address, jobs)
+            prefs.last_notified_timestamp = datetime.now(timezone.utc)
+            notified_users += 1
+            total_jobs_sent += len(jobs)
         except Exception as exc:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Notification error: {exc}"
-            )
-
-        prefs.last_notified_timestamp = datetime.now(timezone.utc)
-        notified_users += 1
-        total_jobs_sent += len(jobs)
+            logger.error(f"Failed to email {account.email_address}: {exc}")
 
     await session.commit()
 
