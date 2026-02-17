@@ -3,7 +3,7 @@
 import { useState, useEffect, KeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import NavigationBeam from '@/components/NavigationBeam';
-import { fetchProfileConfig, persistProfileConfig, fetchLocationSuggestions } from '@/lib/api';
+import { fetchProfileConfig, persistProfileConfig, fetchLocationSuggestions, verifyIdentity, terminateSession, updateEmail } from '@/lib/api';
 
 type ProfileConfig = {
   keywords: string[];
@@ -11,6 +11,7 @@ type ProfileConfig = {
   tech_keywords: string[];
   remote_preference: boolean;
   visa_sponsorship_only: boolean;
+  notification_enabled: boolean;
 };
 
 export default function ProfileManager() {
@@ -20,6 +21,7 @@ export default function ProfileManager() {
     tech_keywords: [],
     remote_preference: false,
     visa_sponsorship_only: false,
+    notification_enabled: true,
   });
   
   const [keywordBuffer, setKeywordBuffer] = useState('');
@@ -30,6 +32,11 @@ export default function ProfileManager() {
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
   const [statusMessage, setStatusMessage] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [currentEmail, setCurrentEmail] = useState('');
+  const [emailBuffer, setEmailBuffer] = useState('');
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [isSavingEmail, setIsSavingEmail] = useState(false);
   const routeController = useRouter();
 
   useEffect(() => {
@@ -62,10 +69,19 @@ export default function ProfileManager() {
 
   const verifyAndRetrieve = async () => {
     const sessionTicket = typeof window !== 'undefined' ? localStorage.getItem('hn_session_vault') : null;
-    
+
     if (!sessionTicket) {
       routeController.push('/');
       return;
+    }
+
+    try {
+      const profile = await verifyIdentity();
+      setDisplayName(profile.username || '');
+      setCurrentEmail(profile.email_address || '');
+      setEmailBuffer(profile.email_address || '');
+    } catch {
+      // Token may be invalid
     }
 
     await retrieveConfiguration();
@@ -81,11 +97,40 @@ export default function ProfileManager() {
         tech_keywords: fetchedConfig.tech_keywords || [],
         remote_preference: fetchedConfig.remote_preference || false,
         visa_sponsorship_only: fetchedConfig.visa_sponsorship_only || false,
+        notification_enabled: fetchedConfig.notification_enabled ?? true,
       });
     } catch (fault) {
       console.error('Configuration retrieval fault:', fault);
     } finally {
       setIsRetrieving(false);
+    }
+  };
+
+  const executeLogout = () => {
+    terminateSession();
+    routeController.push('/');
+  };
+
+  const executeEmailSave = async () => {
+    const trimmed = emailBuffer.trim();
+    if (!trimmed || trimmed === currentEmail) {
+      setIsEditingEmail(false);
+      setEmailBuffer(currentEmail);
+      return;
+    }
+    try {
+      setIsSavingEmail(true);
+      setStatusMessage('');
+      const updated = await updateEmail(trimmed);
+      setCurrentEmail(updated.email_address);
+      setEmailBuffer(updated.email_address);
+      setIsEditingEmail(false);
+      setStatusMessage('Email updated.');
+      setTimeout(() => setStatusMessage(''), 3000);
+    } catch (fault: any) {
+      setStatusMessage(fault.message || 'Failed to update email.');
+    } finally {
+      setIsSavingEmail(false);
     }
   };
 
@@ -182,14 +227,68 @@ export default function ProfileManager() {
       <NavigationBeam />
       
       <main className="container mx-auto px-6 py-8 max-w-4xl">
-        <div className="mb-8">
-          <h2 className="text-4xl font-black text-gray-900 mb-2 flex items-center gap-2">
-            <i className="bi bi-gear" aria-hidden="true" />
-            Profile Manager
-          </h2>
-          <p className="text-gray-600">
-            Customize your experience
-          </p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h2 className="text-4xl font-black text-gray-900 mb-2 flex items-center gap-2">
+              <i className="bi bi-gear" aria-hidden="true" />
+              Profile Manager
+            </h2>
+            {displayName && (
+              <p className="text-gray-600 flex items-center gap-2">
+                <i className="bi bi-person-circle" aria-hidden="true" />
+                {displayName}
+              </p>
+            )}
+            {!displayName && (
+              <p className="text-gray-600">
+                Customize your experience
+              </p>
+            )}
+            {currentEmail && !isEditingEmail && (
+              <p className="text-gray-500 text-sm flex items-center gap-2 mt-1">
+                <i className="bi bi-envelope" aria-hidden="true" />
+                {currentEmail}
+                <button
+                  onClick={() => setIsEditingEmail(true)}
+                  className="text-smoky-rose-500 hover:text-smoky-rose-700 font-semibold text-xs"
+                >
+                  Change
+                </button>
+              </p>
+            )}
+            {isEditingEmail && (
+              <div className="flex items-center gap-2 mt-1">
+                <input
+                  type="email"
+                  value={emailBuffer}
+                  onChange={(evt) => setEmailBuffer(evt.target.value)}
+                  onKeyDown={(evt) => { if (evt.key === 'Enter') executeEmailSave(); }}
+                  className="px-3 py-1 text-sm border-2 border-slate-grey-300 rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all"
+                  autoFocus
+                />
+                <button
+                  onClick={executeEmailSave}
+                  disabled={isSavingEmail}
+                  className="text-sm font-semibold text-white bg-smoky-rose-500 px-3 py-1 rounded-lg disabled:opacity-50"
+                >
+                  {isSavingEmail ? 'Saving...' : 'Save'}
+                </button>
+                <button
+                  onClick={() => { setIsEditingEmail(false); setEmailBuffer(currentEmail); }}
+                  className="text-sm font-semibold text-gray-500 hover:text-gray-700"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={executeLogout}
+            className="mt-2 bg-white text-gray-700 px-4 py-2 rounded-lg font-semibold border-2 border-gray-300 hover:bg-red-50 hover:border-red-400 hover:text-red-600 transition-all flex items-center gap-2"
+          >
+            <i className="bi bi-box-arrow-right" aria-hidden="true" />
+            Log out
+          </button>
         </div>
 
         {statusMessage && (
@@ -389,6 +488,19 @@ export default function ProfileManager() {
               <span className="font-semibold text-gray-700 flex items-center gap-2">
                 <i className="bi bi-passport" aria-hidden="true" />
                 Visa sponsorship only
+              </span>
+            </label>
+
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={configuration.notification_enabled}
+                onChange={(evt) => setConfiguration({ ...configuration, notification_enabled: evt.target.checked })}
+                className="w-6 h-6 text-smoky-rose-500 focus:ring-2 focus:ring-smoky-rose-200 rounded"
+              />
+              <span className="font-semibold text-gray-700 flex items-center gap-2">
+                <i className="bi bi-envelope" aria-hidden="true" />
+                Email notifications
               </span>
             </label>
 

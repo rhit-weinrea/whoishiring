@@ -7,7 +7,8 @@ from backend.data_models.schemas import (
     UserRegistrationPayload,
     UserLoginPayload,
     AuthTokenPayload,
-    UserProfileData
+    UserProfileData,
+    UpdateEmailPayload
 )
 from backend.data_models.models import UserAccount
 from backend.utilities.authentication import (
@@ -80,4 +81,28 @@ async def authenticate(
 
 @auth_api.get("/profile", response_model=UserProfileData)
 async def fetch_profile(account: UserAccount = Depends(extract_current_user)):
+    return account
+
+
+@auth_api.put("/email", response_model=UserProfileData)
+async def update_email(
+    payload: UpdateEmailPayload,
+    session: AsyncSession = Depends(acquire_db_session),
+    account: UserAccount = Depends(extract_current_user)
+):
+    if payload.email_address == account.email_address:
+        return account
+
+    existing_stmt = select(UserAccount).where(UserAccount.email_address == payload.email_address)
+    existing_result = await session.execute(existing_stmt)
+    if existing_result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+
+    account.email_address = payload.email_address
+    await session.commit()
+    await session.refresh(account)
+
     return account

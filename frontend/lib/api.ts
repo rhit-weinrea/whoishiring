@@ -98,17 +98,16 @@ class NetworkBridge {
 
 const bridge = new NetworkBridge();
 
-// Credential operations (disabled for now)
-// export const authenticateViaCredentials = async (mailAddress: string, secretCode: string) => {
-//   const outcome = await bridge.transmit('/auth/login', 'POST', { 
-//     username: mailAddress, 
-//     password: secretCode 
-//   });
-//   if (outcome.access_token) {
-//     bridge.archiveSession(outcome.access_token);
-//   }
-//   return outcome;
-// };
+export const authenticateViaCredentials = async (username: string, password: string) => {
+  const outcome = await bridge.transmit('/auth/login', 'POST', {
+    username,
+    password
+  });
+  if (outcome.access_token) {
+    bridge.archiveSession(outcome.access_token);
+  }
+  return outcome;
+};
 
 // export const forgeNewAccount = async (mailAddress: string, secretCode: string, alias: string) => {
 //   const outcome = await bridge.transmit('/auth/register', 'POST', { 
@@ -122,9 +121,9 @@ const bridge = new NetworkBridge();
 //   return outcome;
 // };
 
-// export const terminateSession = (): void => {
-//   bridge.eraseSession();
-// };
+export const terminateSession = (): void => {
+  bridge.eraseSession();
+};
 
 // Employment listing operations
 export const queryEmploymentListings = async (criteria?: {
@@ -236,6 +235,7 @@ export const fetchProfileConfig = async () => {
     tech_keywords: data.preferred_tech_stack || [],
     remote_preference: data.remote_only || false,
     visa_sponsorship_only: data.visa_sponsorship_only || false,
+    notification_enabled: data.notification_enabled ?? true,
   };
 };
 
@@ -245,6 +245,7 @@ export const persistProfileConfig = async (configuration: {
   tech_keywords?: string[];
   remote_preference?: boolean;
   visa_sponsorship_only?: boolean;
+  notification_enabled?: boolean;
 }) => {
   return bridge.transmit('/preferences/my-preferences', 'PUT', {
     preferred_locations: configuration.locations,
@@ -252,6 +253,7 @@ export const persistProfileConfig = async (configuration: {
     remote_only: configuration.remote_preference ?? false,
     keywords_to_match: configuration.keywords ?? [],
     visa_sponsorship_only: configuration.visa_sponsorship_only ?? false,
+    notification_enabled: configuration.notification_enabled ?? true,
   });
 };
 
@@ -262,6 +264,10 @@ export const fetchLocationSuggestions = async (query: string, limit = 5) => {
 
 export const verifyIdentity = async () => {
   return bridge.transmit('/auth/profile', 'GET');
+};
+
+export const updateEmail = async (emailAddress: string) => {
+  return bridge.transmit('/auth/email', 'PUT', { email_address: emailAddress });
 };
 
 export { bridge };

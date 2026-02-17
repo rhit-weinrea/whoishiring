@@ -7,9 +7,10 @@ from sqlalchemy import select
 
 from backend.core.database_engine import acquire_db_session
 from backend.data_models.schemas import PreferencesPayload, PreferencesData
-from backend.data_models.models import UserAccount, UserJobPreferences
+from backend.data_models.models import UserAccount, UserJobPreferences, JobPosting
 from backend.utilities.authentication import extract_current_user
 from backend.utilities.location import normalize_location
+from backend.utilities.notifications import job_matches_preferences, send_confirmation_email
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +57,9 @@ async def modify_preferences(
         prefs = UserJobPreferences(user_account_id=account.user_id)
         session.add(prefs)
 
+    was_enabled = prefs.notification_enabled
+    now_enabled = payload.notification_enabled
+
     normalized_locations = []
     if payload.preferred_locations:
         for location in payload.preferred_locations:
@@ -76,6 +80,20 @@ async def modify_preferences(
 
     await session.commit()
     await session.refresh(prefs)
+
+    should_confirm = now_enabled and (not was_enabled or prefs.last_notified_timestamp is None)
+    if should_confirm:
+        try:
+            since = datetime.now(timezone.utc) - timedelta(days=1)
+            job_stmt = select(JobPosting).where(
+                JobPosting.parsed_timestamp >= since
+            ).order_by(JobPosting.parsed_timestamp.desc())
+            jobs_result = await session.execute(job_stmt)
+            matched = [j for j in jobs_result.scalars().all() if job_matches_preferences(j, prefs)]
+            await send_confirmation_email(account.email_address, matched)
+            logger.info("Sent confirmation email to %s with %d match(es)", account.email_address, len(matched))
+        except Exception as exc:
+            logger.error("Failed to send confirmation email to %s: %s", account.email_address, exc)
 
     return prefs
 

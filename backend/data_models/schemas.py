@@ -31,6 +31,10 @@ class UserProfileData(BaseModel):
         from_attributes = True
 
 
+class UpdateEmailPayload(BaseModel):
+    email_address: EmailStr
+
+
 class PreferencesPayload(BaseModel):
     preferred_locations: Optional[List[str]] = None
     preferred_tech_stack: Optional[List[str]] = None

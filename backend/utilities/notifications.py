@@ -1,4 +1,5 @@
-from __future__ import annotations      
+from __future__ import annotations
+import logging
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
@@ -13,6 +14,8 @@ from typing import Iterable, List
 
 from backend.core.configuration import fetch_environment_config
 from backend.data_models.models import JobPosting, UserJobPreferences
+
+logger = logging.getLogger(__name__)
 
 async def send_daily_notifications(session: AsyncSession):
     # Get all users with notifications enabled
@@ -38,7 +41,7 @@ async def send_daily_notifications(session: AsyncSession):
             await send_notification_email(user.email_address, matched_jobs)
             prefs.last_notified_timestamp = now
             await session.commit()
-            print(f"Sent notification to {user.email_address} for {len(matched_jobs)} jobs.")
+            logger.info("Sent notification to %s for %d job(s)", user.email_address, len(matched_jobs))
 
 
 
@@ -104,7 +107,10 @@ def format_notification_email(jobs: List[JobPosting]) -> str:
 def _send_email_sync(recipient: str, jobs: List[JobPosting]) -> None:
     config = fetch_environment_config()
     if not config.SMTP_HOST or not config.SMTP_FROM_EMAIL:
+        logger.error("SMTP settings are not configured, cannot send email to %s", recipient)
         raise RuntimeError("SMTP settings are not configured.")
+
+    logger.info("Sending notification email to %s with %d job(s)", recipient, len(jobs))
 
     message = EmailMessage()
     message["Subject"] = f"HN Job Board: {len(jobs)} new matches"
@@ -119,15 +125,24 @@ def _send_email_sync(recipient: str, jobs: List[JobPosting]) -> None:
             smtp.login(config.SMTP_USERNAME, config.SMTP_PASSWORD)
         smtp.send_message(message)
 
+    logger.info("Notification email sent successfully to %s", recipient)
+
 
 async def send_notification_email(recipient: str, jobs: List[JobPosting]) -> None:
-    await asyncio.to_thread(_send_email_sync, recipient, jobs)
+    try:
+        await asyncio.to_thread(_send_email_sync, recipient, jobs)
+    except Exception:
+        logger.error("Failed to send notification email to %s", recipient, exc_info=True)
+        raise
 
 
 def _send_confirmation_sync(recipient: str, jobs: List[JobPosting]) -> None:
     config = fetch_environment_config()
     if not config.SMTP_HOST or not config.SMTP_FROM_EMAIL:
+        logger.error("SMTP settings are not configured, cannot send confirmation to %s", recipient)
         raise RuntimeError("SMTP settings are not configured.")
+
+    logger.info("Sending confirmation email to %s with %d match(es)", recipient, len(jobs))
 
     message = EmailMessage()
     message["From"] = config.SMTP_FROM_EMAIL
@@ -157,6 +172,12 @@ def _send_confirmation_sync(recipient: str, jobs: List[JobPosting]) -> None:
             smtp.login(config.SMTP_USERNAME, config.SMTP_PASSWORD)
         smtp.send_message(message)
 
+    logger.info("Confirmation email sent successfully to %s", recipient)
+
 
 async def send_confirmation_email(recipient: str, jobs: List[JobPosting]) -> None:
-    await asyncio.to_thread(_send_confirmation_sync, recipient, jobs)
+    try:
+        await asyncio.to_thread(_send_confirmation_sync, recipient, jobs)
+    except Exception:
+        logger.error("Failed to send confirmation email to %s", recipient, exc_info=True)
+        raise
