@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, ChangeEvent } from 'react';
+import { useState, useEffect, ChangeEvent, KeyboardEvent } from 'react';
+import { fetchLocationSuggestions } from '@/lib/api';
 
 type QueryRefineryProps = {
   onCriteriaUpdate: (criteria: {
@@ -18,6 +19,40 @@ export default function QueryRefinery({ onCriteriaUpdate }: QueryRefineryProps) 
   const [distantBox, setDistantBox] = useState(false);
   const [visaOnly, setVisaOnly] = useState(false);
   const [techInput, setTechInput] = useState('');
+  const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+
+  useEffect(() => {
+    const trimmed = areaInput.trim();
+    if (trimmed.length < 2) {
+      setLocationSuggestions([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        setIsSuggesting(true);
+        const suggestions = await fetchLocationSuggestions(trimmed, 6);
+        setLocationSuggestions(suggestions);
+      } catch (fault) {
+        console.error('Location suggestion fault:', fault);
+        setLocationSuggestions([]);
+      } finally {
+        setIsSuggesting(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [areaInput]);
+
+  const selectLocationSuggestion = (value: string) => {
+    setAreaInput(value);
+    setLocationSuggestions([]);
+  };
+
+  const handleKeyDown = (evt: KeyboardEvent<HTMLInputElement>) => {
+    if (evt.key === 'Enter') deployFilters();
+  };
 
   const deployFilters = () => {
     // Always pass both filters if set
@@ -62,12 +97,13 @@ export default function QueryRefinery({ onCriteriaUpdate }: QueryRefineryProps) 
             type="text"
             value={phraseInput}
             onChange={(evt: ChangeEvent<HTMLInputElement>) => setPhraseInput(evt.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="TypeScript, DevOps, ML..."
             className="w-full px-4 py-2 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
           />
         </div>
 
-        <div>
+        <div className="relative">
           <label
             htmlFor="area-input"
             className="block text-xs font-bold text-[var(--muted)] mb-2 uppercase tracking-wide"
@@ -79,9 +115,32 @@ export default function QueryRefinery({ onCriteriaUpdate }: QueryRefineryProps) 
             type="text"
             value={areaInput}
             onChange={(evt: ChangeEvent<HTMLInputElement>) => setAreaInput(evt.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="NYC, Berlin, Anywhere..."
             className="w-full px-4 py-2 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
           />
+          {(isSuggesting || locationSuggestions.length > 0) && (
+            <div className="absolute z-10 w-full mt-1 border-2 border-[var(--outline)] rounded-lg bg-[var(--background)] shadow-lg">
+              {isSuggesting && (
+                <p className="text-sm text-[var(--muted)] px-4 py-2">Searching...</p>
+              )}
+              {!isSuggesting && locationSuggestions.length > 0 && (
+                <ul className="divide-y divide-[var(--outline)]">
+                  {locationSuggestions.map((suggestion) => (
+                    <li key={suggestion}>
+                      <button
+                        type="button"
+                        onClick={() => selectLocationSuggestion(suggestion)}
+                        className="w-full text-left px-4 py-2 hover:bg-smoky-rose-50 text-[var(--foreground)] font-medium"
+                      >
+                        {suggestion}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex items-end">
@@ -127,6 +186,7 @@ export default function QueryRefinery({ onCriteriaUpdate }: QueryRefineryProps) 
           type="text"
           value={techInput}
           onChange={(evt: ChangeEvent<HTMLInputElement>) => setTechInput(evt.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder="Python, React, Postgres"
           className="w-full px-4 py-2 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted)]"
         />

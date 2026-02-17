@@ -231,7 +231,7 @@ def _send_feedback_email_sync(sender_email: str, subject: str, message_body: str
     message = EmailMessage()
     message["Subject"] = f"Feedback: {subject}"
     message["From"] = config.SMTP_FROM_EMAIL
-    message["To"] = config.SMTP_FROM_EMAIL
+    message["To"] = "feedback-hn@abbyweinreb.com"
     message.set_content(
         f"Feedback from: {sender_email}\n\n"
         f"Subject: {subject}\n\n"
