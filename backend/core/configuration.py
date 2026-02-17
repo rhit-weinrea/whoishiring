@@ -24,6 +24,7 @@ class EnvironmentConfig(BaseSettings):
     SMTP_PASSWORD: str | None = None
     SMTP_FROM_EMAIL: str | None = None
     SMTP_USE_TLS: bool = True
+    FRONTEND_URL: str = "https://who-is-hiring.com"
     
     class Config:
         env_file = ".env"

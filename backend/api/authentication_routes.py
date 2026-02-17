@@ -3,14 +3,20 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from jose import jwt, JWTError
 from backend.core.database_engine import acquire_db_session
+from backend.core.configuration import fetch_environment_config
+from backend.core.settings import settings
 from backend.data_models.schemas import (
     UserRegistrationPayload,
     UserLoginPayload,
     AuthTokenPayload,
     UserProfileData,
-    UpdateEmailPayload
+    UpdateEmailPayload,
+    ForgotPasswordPayload,
+    ResetPasswordPayload,
+    FeedbackPayload
 )
 from backend.data_models.models import UserAccount
 from backend.utilities.authentication import (
@@ -19,6 +25,7 @@ from backend.utilities.authentication import (
     craft_access_token,
     extract_current_user
 )
+from backend.utilities.notifications import send_reset_email, send_feedback_email
 
 logger = logging.getLogger(__name__)
 
@@ -118,3 +125,88 @@ async def update_email(
     await session.refresh(account)
 
     return account
+
+
+@auth_api.post("/forgot-password")
+async def forgot_password(
+    payload: ForgotPasswordPayload,
+    session: AsyncSession = Depends(acquire_db_session)
+):
+    stmt = select(UserAccount).where(UserAccount.email_address == payload.email_address)
+    result = await session.execute(stmt)
+    account = result.scalar_one_or_none()
+
+    if account:
+        token_data = {
+            "sub": account.username,
+            "purpose": "password_reset",
+            "exp": datetime.now(timezone.utc) + timedelta(minutes=30),
+        }
+        token = jwt.encode(token_data, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+        config = fetch_environment_config()
+        reset_url = f"{config.FRONTEND_URL}/reset-password?token={token}"
+        try:
+            await send_reset_email(account.email_address, reset_url)
+        except Exception:
+            logger.error("Failed to send reset email for user %s", account.username)
+
+    return {"message": "If that email is registered, a reset link has been sent."}
+
+
+@auth_api.post("/reset-password")
+async def reset_password(
+    payload: ResetPasswordPayload,
+    session: AsyncSession = Depends(acquire_db_session)
+):
+    try:
+        token_data = jwt.decode(
+            payload.token,
+            settings.SECRET_KEY,
+            algorithms=[settings.JWT_ALGORITHM]
+        )
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token."
+        )
+
+    if token_data.get("purpose") != "password_reset":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token."
+        )
+
+    username = token_data.get("sub")
+    if not username:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token."
+        )
+
+    stmt = select(UserAccount).where(UserAccount.username == username)
+    result = await session.execute(stmt)
+    account = result.scalar_one_or_none()
+
+    if not account:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token."
+        )
+
+    account.hashed_password = encrypt_password(payload.new_password)
+    await session.commit()
+
+    return {"message": "Password reset successfully."}
+
+
+@auth_api.post("/feedback")
+async def submit_feedback(payload: FeedbackPayload):
+    try:
+        await send_feedback_email(payload.email_address, payload.subject, payload.message)
+    except Exception:
+        logger.error("Failed to send feedback email from %s", payload.email_address)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send feedback. Please try again later."
+        )
+    return {"message": "Feedback submitted successfully."}

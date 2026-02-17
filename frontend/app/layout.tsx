@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import FooterNav from '@/components/FooterNav'
 
 export const metadata: Metadata = {
   title: 'HN Career Hub',
@@ -18,7 +19,10 @@ export default function RootLayout({
           __html: `(function(){var t=localStorage.getItem('hn_theme');if(t==='dark')document.documentElement.classList.add('dark');})();`
         }} />
       </head>
-      <body>{children}</body>
+      <body className="flex flex-col min-h-screen">
+        <div className="flex-1">{children}</div>
+        <FooterNav />
+      </body>
     </html>
   )
 }

@@ -98,12 +98,27 @@ class BookmarkedJobData(BaseModel):
         from_attributes = True
 
 
+class ForgotPasswordPayload(BaseModel):
+    email_address: EmailStr
+
+
+class ResetPasswordPayload(BaseModel):
+    token: str
+    new_password: str = Field(..., min_length=8)
+
+
 class ScraperPayload(BaseModel):
     admin_api_key: str
     force_refresh: bool = False
     parse: bool = True
     who_is_hiring_id: str | None = None
     max_items: int | None = None
+
+
+class FeedbackPayload(BaseModel):
+    email_address: EmailStr
+    subject: str = Field(..., min_length=1, max_length=200)
+    message: str = Field(..., min_length=1)
 
 
 class ScraperResultData(BaseModel):

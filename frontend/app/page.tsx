@@ -141,6 +141,18 @@ export default function LoginPage() {
             </button>
           </form>
 
+          {!isRegistering && (
+            <div className="mt-3 text-right">
+              <a
+                href="/forgot-password"
+                className="text-sm font-semibold transition-all hover:underline"
+                style={{ color: 'var(--foreground)', opacity: 0.7 }}
+              >
+                Forgot your password?
+              </a>
+            </div>
+          )}
+
           <div className="mt-6 text-center space-y-2">
             <button
               onClick={switchMode}

@@ -181,3 +181,76 @@ async def send_confirmation_email(recipient: str, jobs: List[JobPosting]) -> Non
     except Exception:
         logger.error("Failed to send confirmation email to %s", recipient, exc_info=True)
         raise
+
+
+def _send_reset_email_sync(recipient: str, reset_url: str) -> None:
+    config = fetch_environment_config()
+    if not config.SMTP_HOST or not config.SMTP_FROM_EMAIL:
+        logger.error("SMTP settings are not configured, cannot send reset email to %s", recipient)
+        raise RuntimeError("SMTP settings are not configured.")
+
+    logger.info("Sending password reset email to %s", recipient)
+
+    message = EmailMessage()
+    message["Subject"] = "Password Reset — Who Is Hiring"
+    message["From"] = config.SMTP_FROM_EMAIL
+    message["To"] = recipient
+    message.set_content(
+        "You requested a password reset for your Who Is Hiring account.\n\n"
+        f"Click the link below to set a new password:\n{reset_url}\n\n"
+        "This link expires in 30 minutes.\n\n"
+        "If you didn't request this, you can safely ignore this email."
+    )
+
+    with smtplib.SMTP(config.SMTP_HOST, config.SMTP_PORT) as smtp:
+        if config.SMTP_USE_TLS:
+            smtp.starttls()
+        if config.SMTP_USERNAME and config.SMTP_PASSWORD:
+            smtp.login(config.SMTP_USERNAME, config.SMTP_PASSWORD)
+        smtp.send_message(message)
+
+    logger.info("Password reset email sent successfully to %s", recipient)
+
+
+async def send_reset_email(recipient: str, reset_url: str) -> None:
+    try:
+        await asyncio.to_thread(_send_reset_email_sync, recipient, reset_url)
+    except Exception:
+        logger.error("Failed to send password reset email to %s", recipient, exc_info=True)
+        raise
+
+
+def _send_feedback_email_sync(sender_email: str, subject: str, message_body: str) -> None:
+    config = fetch_environment_config()
+    if not config.SMTP_HOST or not config.SMTP_FROM_EMAIL:
+        logger.error("SMTP settings are not configured, cannot send feedback email")
+        raise RuntimeError("SMTP settings are not configured.")
+
+    logger.info("Sending feedback email from %s", sender_email)
+
+    message = EmailMessage()
+    message["Subject"] = f"Feedback: {subject}"
+    message["From"] = config.SMTP_FROM_EMAIL
+    message["To"] = config.SMTP_FROM_EMAIL
+    message.set_content(
+        f"Feedback from: {sender_email}\n\n"
+        f"Subject: {subject}\n\n"
+        f"{message_body}"
+    )
+
+    with smtplib.SMTP(config.SMTP_HOST, config.SMTP_PORT) as smtp:
+        if config.SMTP_USE_TLS:
+            smtp.starttls()
+        if config.SMTP_USERNAME and config.SMTP_PASSWORD:
+            smtp.login(config.SMTP_USERNAME, config.SMTP_PASSWORD)
+        smtp.send_message(message)
+
+    logger.info("Feedback email sent successfully from %s", sender_email)
+
+
+async def send_feedback_email(sender_email: str, subject: str, message_body: str) -> None:
+    try:
+        await asyncio.to_thread(_send_feedback_email_sync, sender_email, subject, message_body)
+    except Exception:
+        logger.error("Failed to send feedback email from %s", sender_email, exc_info=True)
+        raise

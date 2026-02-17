@@ -263,12 +263,28 @@ export const fetchLocationSuggestions = async (query: string, limit = 5) => {
   return bridge.transmit(`/locations/suggest?${params.toString()}`, 'GET');
 };
 
+export const requestPasswordReset = async (email: string) => {
+  return bridge.transmit('/auth/forgot-password', 'POST', { email_address: email });
+};
+
+export const resetPassword = async (token: string, newPassword: string) => {
+  return bridge.transmit('/auth/reset-password', 'POST', { token, new_password: newPassword });
+};
+
 export const verifyIdentity = async () => {
   return bridge.transmit('/auth/profile', 'GET');
 };
 
 export const updateEmail = async (emailAddress: string) => {
   return bridge.transmit('/auth/email', 'PUT', { email_address: emailAddress });
+};
+
+export const submitFeedback = async (email: string, subject: string, message: string) => {
+  return bridge.transmit('/auth/feedback', 'POST', {
+    email_address: email,
+    subject,
+    message,
+  });
 };
 
 export { bridge };
