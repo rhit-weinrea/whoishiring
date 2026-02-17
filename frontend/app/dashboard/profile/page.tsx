@@ -214,14 +214,14 @@ export default function ProfileManager() {
 
   if (isRetrieving) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+      <div className="min-h-screen bg-[var(--background)]">
         <NavigationBeam />
         <div className="flex justify-center items-center h-96">
           <div className="text-center">
             <div className="text-6xl mb-4 animate-bounce">
               <i className="bi bi-hourglass" aria-hidden="true" />
             </div>
-            <p className="text-gray-600 font-bold">Retrieving profile...</p>
+            <p className="text-[var(--muted)] font-bold">Retrieving profile...</p>
           </div>
         </div>
       </div>
@@ -229,29 +229,29 @@ export default function ProfileManager() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+    <div className="min-h-screen bg-[var(--background)]">
       <NavigationBeam />
       
       <main className="container mx-auto px-6 py-8 max-w-4xl">
         <div className="mb-8 flex items-start justify-between">
           <div>
-            <h2 className="text-4xl font-black text-gray-900 mb-2 flex items-center gap-2">
+            <h2 className="text-4xl font-black text-[var(--foreground)] mb-2 flex items-center gap-2">
               <i className="bi bi-gear" aria-hidden="true" />
               Profile Manager
             </h2>
             {displayName && (
-              <p className="text-gray-600 flex items-center gap-2">
+              <p className="text-[var(--muted)] flex items-center gap-2">
                 <i className="bi bi-person-circle" aria-hidden="true" />
                 {displayName}
               </p>
             )}
             {!displayName && (
-              <p className="text-gray-600">
+              <p className="text-[var(--muted)]">
                 Customize your experience
               </p>
             )}
             {currentEmail && !isEditingEmail && (
-              <p className="text-gray-500 text-sm flex items-center gap-2 mt-1">
+              <p className="text-[var(--muted)] text-sm flex items-center gap-2 mt-1">
                 <i className="bi bi-envelope" aria-hidden="true" />
                 {currentEmail}
                 <button
@@ -270,7 +270,7 @@ export default function ProfileManager() {
                   onChange={(evt) => setEmailBuffer(evt.target.value)}
                   onKeyDown={(evt) => { if (evt.key === 'Enter') executeEmailSave(); }}
                   placeholder="you@example.com"
-                  className="px-3 py-1 text-sm border-2 border-slate-grey-300 rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all bg-white text-gray-900"
+                  className="px-3 py-1 text-sm border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all bg-[var(--surface)] text-[var(--foreground)]"
                   autoFocus
                 />
                 <button
@@ -282,7 +282,7 @@ export default function ProfileManager() {
                 </button>
                 <button
                   onClick={() => { setIsEditingEmail(false); setEmailBuffer(currentEmail); }}
-                  className="text-sm font-semibold text-gray-500 hover:text-gray-700"
+                  className="text-sm font-semibold text-[var(--muted)] hover:text-[var(--foreground)]"
                 >
                   Cancel
                 </button>
@@ -291,7 +291,7 @@ export default function ProfileManager() {
           </div>
           <button
             onClick={executeLogout}
-            className="mt-2 bg-white text-gray-700 px-4 py-2 rounded-lg font-semibold border-2 border-gray-300 hover:bg-red-50 hover:border-red-400 hover:text-red-600 transition-all flex items-center gap-2"
+            className="mt-2 bg-[var(--surface)] text-[var(--foreground)] px-4 py-2 rounded-lg font-semibold border-2 border-[var(--outline)] hover:bg-red-50 hover:border-red-400 hover:text-red-600 transition-all flex items-center gap-2"
           >
             <i className="bi bi-box-arrow-right" aria-hidden="true" />
             Log out
@@ -302,8 +302,8 @@ export default function ProfileManager() {
 
         <div className="space-y-6">
           {/* Keywords Section */}
-          <div className="bg-white rounded-xl p-6 border-2 border-slate-grey-200">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <div className="bg-[var(--surface)] rounded-xl p-6 border-2 border-[var(--outline)]">
+            <h3 className="text-xl font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <i className="bi bi-key" aria-hidden="true" />
               Search Keywords
             </h3>
@@ -314,7 +314,7 @@ export default function ProfileManager() {
                 onChange={(evt) => setKeywordBuffer(evt.target.value)}
                 onKeyPress={handleKeywordEnter}
                 placeholder="JavaScript, Rust, Data..."
-                className="flex-1 px-4 py-2 border-2 border-slate-grey-300 rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all"
+                className="flex-1 px-4 py-2 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all"
               />
               <button
                 onClick={appendKeyword}
@@ -342,14 +342,14 @@ export default function ProfileManager() {
                 </span>
               ))}
               {configuration.keywords.length === 0 && (
-                <p className="text-gray-500 text-sm">No keywords configured</p>
+                <p className="text-[var(--muted)] text-sm">No keywords configured</p>
               )}
             </div>
           </div>
 
           {/* Locations Section */}
-          <div className="bg-white rounded-xl p-6 border-2 border-slate-grey-200">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <div className="bg-[var(--surface)] rounded-xl p-6 border-2 border-[var(--outline)]">
+            <h3 className="text-xl font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <i className="bi bi-geo-alt" aria-hidden="true" />
               Target Locations
             </h3>
@@ -360,7 +360,7 @@ export default function ProfileManager() {
                 onChange={(evt) => setLocationBuffer(evt.target.value)}
                 onKeyPress={handleLocationEnter}
                 placeholder="Austin, London, Tokyo..."
-                className="flex-1 px-4 py-2 border-2 border-slate-grey-300 rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all"
+                className="flex-1 px-4 py-2 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all"
               />
               <button
                 onClick={appendLocation}
@@ -373,18 +373,18 @@ export default function ProfileManager() {
               </button>
             </div>
             {(isSuggesting || locationSuggestions.length > 0) && (
-              <div className="mb-4 border-2 border-slate-grey-200 rounded-lg bg-slate-50">
+              <div className="mb-4 border-2 border-[var(--outline)] rounded-lg bg-[var(--background)]">
                 {isSuggesting && (
-                  <p className="text-sm text-gray-500 px-4 py-2">Searching...</p>
+                  <p className="text-sm text-[var(--muted)] px-4 py-2">Searching...</p>
                 )}
                 {!isSuggesting && locationSuggestions.length > 0 && (
-                  <ul className="divide-y divide-slate-grey-200">
+                  <ul className="divide-y divide-[var(--outline)]">
                     {locationSuggestions.map((suggestion) => (
                       <li key={suggestion}>
                         <button
                           type="button"
                           onClick={() => selectLocationSuggestion(suggestion)}
-                          className="w-full text-left px-4 py-2 hover:bg-smoky-rose-50 text-gray-700 font-medium"
+                          className="w-full text-left px-4 py-2 hover:bg-smoky-rose-50 text-[var(--foreground)] font-medium"
                         >
                           {suggestion}
                         </button>
@@ -410,14 +410,14 @@ export default function ProfileManager() {
                 </span>
               ))}
               {configuration.locations.length === 0 && (
-                <p className="text-gray-500 text-sm">No locations configured</p>
+                <p className="text-[var(--muted)] text-sm">No locations configured</p>
               )}
             </div>
           </div>
 
           {/* Tech Keywords Section */}
-          <div className="bg-white rounded-xl p-6 border-2 border-slate-grey-200">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <div className="bg-[var(--surface)] rounded-xl p-6 border-2 border-[var(--outline)]">
+            <h3 className="text-xl font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <i className="bi bi-cpu" aria-hidden="true" />
               Tech Keywords
             </h3>
@@ -428,7 +428,7 @@ export default function ProfileManager() {
                 onChange={(evt) => setTechBuffer(evt.target.value)}
                 onKeyPress={handleTechEnter}
                 placeholder="Python, Next.js, AWS..."
-                className="flex-1 px-4 py-2 border-2 border-slate-grey-300 rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all"
+                className="flex-1 px-4 py-2 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all"
               />
               <button
                 onClick={appendTechKeyword}
@@ -456,14 +456,14 @@ export default function ProfileManager() {
                 </span>
               ))}
               {configuration.tech_keywords.length === 0 && (
-                <p className="text-gray-500 text-sm">No tech keywords configured</p>
+                <p className="text-[var(--muted)] text-sm">No tech keywords configured</p>
               )}
             </div>
           </div>
 
           {/* Additional Settings */}
-          <div className="bg-white rounded-xl p-6 border-2 border-slate-grey-200 space-y-4">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <div className="bg-[var(--surface)] rounded-xl p-6 border-2 border-[var(--outline)] space-y-4">
+            <h3 className="text-xl font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <i className="bi bi-sliders" aria-hidden="true" />
               Extra Controls
             </h3>
@@ -475,7 +475,7 @@ export default function ProfileManager() {
                 onChange={(evt) => setConfiguration({ ...configuration, remote_preference: evt.target.checked })}
                 className="w-6 h-6 text-smoky-rose-500 focus:ring-2 focus:ring-smoky-rose-200 rounded"
               />
-              <span className="font-semibold text-gray-700 flex items-center gap-2">
+              <span className="font-semibold text-[var(--foreground)] flex items-center gap-2">
                 <i className="bi bi-globe" aria-hidden="true" />
                 Favor remote work
               </span>
@@ -488,7 +488,7 @@ export default function ProfileManager() {
                 onChange={(evt) => setConfiguration({ ...configuration, visa_sponsorship_only: evt.target.checked })}
                 className="w-6 h-6 text-smoky-rose-500 focus:ring-2 focus:ring-smoky-rose-200 rounded"
               />
-              <span className="font-semibold text-gray-700 flex items-center gap-2">
+              <span className="font-semibold text-[var(--foreground)] flex items-center gap-2">
                 <i className="bi bi-passport" aria-hidden="true" />
                 Visa sponsorship only
               </span>
@@ -501,15 +501,19 @@ export default function ProfileManager() {
                 onChange={(evt) => setConfiguration({ ...configuration, notification_enabled: evt.target.checked })}
                 className="w-6 h-6 text-smoky-rose-500 focus:ring-2 focus:ring-smoky-rose-200 rounded"
               />
-              <span className="font-semibold text-gray-700 flex items-center gap-2">
+              <span className="font-semibold text-[var(--foreground)] flex items-center gap-2">
                 <i className="bi bi-envelope" aria-hidden="true" />
                 Email notifications
               </span>
             </label>
+            <p className="text-sm text-[var(--muted)] ml-9">
+              Your keywords, locations, and tech preferences are matched against new job postings daily.
+              When enabled, you'll receive a daily email with new matches. A confirmation email is sent immediately when first enabled.
+            </p>
 
           </div>
               {statusMessage && (
-          <div className="mb-6 p-4 bg-white border-2 border-green-500 rounded text-green-800 font-medium">
+          <div className="mb-6 p-4 bg-[var(--surface)] border-2 border-green-500 rounded text-green-800 font-medium">
             {statusMessage}
           </div>
         )}
