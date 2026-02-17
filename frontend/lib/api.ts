@@ -155,9 +155,10 @@ export const queryEmploymentListings = async (criteria?: {
     const remoteData = await bridge.transmit(`/jobs/browse?${remoteParams.toString()}`, 'GET');
     console.log('remote jobs:', remoteData);
 
-    // Merge and deduplicate by job id
+    // Merge, deduplicate, and sort by most recent
     const allJobs = [...locationData, ...remoteData];
     const uniqueJobs = Array.from(new Map(allJobs.map(job => [job.job_id ?? job.id, job])).values());
+    uniqueJobs.sort((a, b) => new Date(b.parsed_timestamp ?? 0).getTime() - new Date(a.parsed_timestamp ?? 0).getTime());
     console.log('merged unique jobs:', uniqueJobs);
     return uniqueJobs.flatMap((job: any) => {
       const base = mapJobToListing(job);
