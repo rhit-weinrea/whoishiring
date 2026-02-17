@@ -1,62 +1,117 @@
-# HackerNews Job Board
+# WhoIsHiring
 
-Full-stack application for scraping and managing HackerNews "Who is hiring?" job postings with AI-powered parsing.
+Full-stack application for browsing HackerNews "Who is hiring?" job postings with AI-powered parsing, search filters, and user preferences.
+
+## Architecture
+
+| Component | Technology | Hosting |
+|-----------|-----------|---------|
+| Frontend | Next.js 14, TypeScript, Tailwind CSS | AWS Amplify |
+| Backend | FastAPI, SQLAlchemy 2.0 (async) | Docker / EC2 |
+| Database | PostgreSQL 15 | AWS RDS (us-east-2) |
+| Email | SES | AWS SES (us-east-2) |
+| AI Parsing | DeepSeek API | External |
 
 ## Project Structure
 
-### Backend (FastAPI)
-Complete REST API with:
-- JWT authentication system
-- HackerNews thread scraping
-- DeepSeek AI-powered job parsing
-- Advanced job filtering and search
-- User preferences and bookmarking
-- PostgreSQL with async SQLAlchemy
+```
+whoishiring/
+├── frontend/               # Next.js 14 app (see frontend/README.md)
+│   ├── app/                # App Router pages
+│   ├── components/         # React components
+│   └── lib/api.ts          # API client
+├── backend/                # FastAPI app (see backend/README.md)
+│   ├── routes/             # API endpoint routers
+│   ├── models/             # SQLAlchemy models
+│   ├── utilities/          # Scraping, parsing, notifications
+│   └── main.py             # App entrypoint
+└── docker-compose.yml      # Local dev: PostgreSQL + API
+```
 
-📁 See `backend/README.md` for detailed documentation
+## Quick Start (Local Development)
 
-### Features
-- 🔐 Secure authentication with JWT and bcrypt
-- 🤖 AI-powered job parsing with DeepSeek API
-- 🔍 Advanced search and filtering
-- 📌 Job bookmarking and application tracking
-- ⚙️ Customizable user preferences
-- 🚀 Fully async/await architecture
-- 📊 20 Python files, 1,196 lines of code
+### Option 1: Docker Compose
 
-## Quick Start
+```bash
+docker-compose up
+```
 
-### Backend Setup
+This starts PostgreSQL on port 5432 and the API on port 8000.
+
+### Option 2: Manual Setup
+
+**Backend:**
 ```bash
 cd backend
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env
-# Edit .env with your credentials
+cp .env.example .env   # edit with your credentials
 python main.py
 ```
 
-Visit http://localhost:8000/docs for interactive API documentation.
+**Frontend:**
+```bash
+cd frontend
+npm install
+# Create .env.local with NEXT_PUBLIC_API_URL=http://localhost:8000
+npm run dev
+```
 
-## Technology Stack
+- Backend API docs: http://localhost:8000/docs
+- Frontend: http://localhost:3000
 
-**Backend:**
-- FastAPI - Modern async web framework
-- SQLAlchemy 2.0 - Async ORM
-- PostgreSQL - Database
-- DeepSeek API - AI job parsing
-- JWT - Authentication
-- Bcrypt - Password hashing
+## AWS Deployment
 
-## Documentation
+### Frontend (Amplify)
 
-- `backend/README.md` - Backend setup and API docs
-- `backend/IMPLEMENTATION_SUMMARY.md` - Technical implementation details
-- `backend/.env.example` - Environment configuration template
+The frontend is deployed via AWS Amplify. Amplify is connected to the repo and auto-builds on push to `main`.
 
-## Security
+```bash
+# Manual trigger if needed
+aws amplify start-job --app-id d1j1xagueqmavc --branch-name main --job-type RELEASE --region us-east-2
+```
 
-✅ CodeQL scan: 0 vulnerabilities found
-✅ All authentication properly secured
-✅ SQL injection prevention via ORM
-✅ Password hashing with bcrypt
-✅ CORS properly configured
+To check build status:
+```bash
+aws amplify list-jobs --app-id d1j1xagueqmavc --branch-name main --region us-east-2 --max-results 3
+```
+
+### Backend
+
+The backend runs as a Docker container. To build and deploy:
+
+```bash
+cd backend
+docker build -t whoishiring-api .
+```
+
+Push to your container registry or deploy to EC2 directly. The container exposes port 8000 and runs Uvicorn.
+
+### Database
+
+PostgreSQL is hosted on AWS RDS in us-east-2. Connection string is configured in `backend/.env` via `DATABASE_URL`.
+
+## Environment Variables
+
+### Backend (`backend/.env`)
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | Async PostgreSQL connection string |
+| `DATABASE_URL_SYNC` | Sync PostgreSQL connection string (migrations) |
+| `SECRET_KEY` | JWT signing key |
+| `DEEPSEEK_API_KEY` | DeepSeek API key for AI parsing |
+| `ADMIN_API_KEY` | Key for admin endpoints (scrape trigger) |
+| `SMTP_HOST` | SES SMTP endpoint |
+| `SMTP_PORT` | SES SMTP port |
+| `SMTP_USERNAME` | SES SMTP username |
+| `SMTP_PASSWORD` | SES SMTP password |
+| `SMTP_FROM_EMAIL` | Sender email address |
+| `CORS_ORIGINS` | Comma-separated allowed origins |
+
+### Frontend (`frontend/.env.local`)
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_API_URL` | Backend API base URL (e.g. `http://localhost:8000`) |

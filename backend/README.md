@@ -1,95 +1,132 @@
-# HackerNews Job Board Backend
+# WhoIsHiring - Backend
 
-Complete FastAPI backend for scraping and managing HackerNews "Who is hiring?" job postings with AI-powered parsing.
+FastAPI backend with async SQLAlchemy, JWT authentication, and DeepSeek AI-powered job parsing.
 
 ## Features
 
-- **JWT Authentication** - Secure user registration and login
-- **Job Scraping** - Automated HN thread scraping with DeepSeek AI parsing
-- **Advanced Filters** - Search by location, tech stack, remote status, company
-- **User Preferences** - Customizable job matching preferences
-- **Bookmarking** - Save and track job applications
-- **Async/Await** - Fully asynchronous for high performance
+- JWT authentication (registration, login, password reset)
+- HackerNews "Who is hiring?" thread scraping
+- DeepSeek AI-powered job parsing (company, location, tech stack, remote status)
+- Advanced filtering (location, remote, visa, tech keywords, full-text search)
+- User preferences and email notifications (via AWS SES)
+- Job bookmarking with application tracking
+- Location suggestion endpoint (autocomplete from parsed job data)
+- Scheduled background scraping via APScheduler
 
 ## Quick Start
 
 ```bash
-# Install dependencies
+# Setup virtual environment
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 
-# Setup environment
+# Configure environment
 cp .env.example .env
-# Edit .env with your credentials
+# Edit .env with your database URL, API keys, and SMTP settings
 
-# Create database
-createdb hn_job_board
-
-# Run application
+# Run the application
 python main.py
 ```
 
-Visit http://localhost:8000/docs for API documentation.
+Or use the setup script:
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+API docs: http://localhost:8000/docs
+
+## Docker
+
+Build and run:
+```bash
+docker build -t whoishiring-api .
+docker run -p 8000:8000 --env-file .env whoishiring-api
+```
+
+Or with Docker Compose (from repo root):
+```bash
+docker-compose up
+```
+
+This starts PostgreSQL on port 5432 and the API on port 8000.
 
 ## API Endpoints
 
 ### Authentication (`/api/v1/auth`)
-- `POST /register` - Create new account
-- `POST /login` - Get JWT token
-- `GET /profile` - Fetch user profile
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/register` | Create account |
+| POST | `/login` | Get JWT token |
+| GET | `/profile` | Get current user profile |
+| PUT | `/profile/email` | Update email address |
+| POST | `/forgot-password` | Request password reset email |
+| POST | `/reset-password` | Reset password with token |
 
 ### Jobs (`/api/v1/jobs`)
-- `GET /browse` - Browse with filters
-- `GET /{job_id}` - Get job details
-- `GET /search/text` - Full-text search
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/browse` | Browse jobs with filters (location, remote, visa, tech) |
+| GET | `/{job_id}` | Get job details |
+| GET | `/search/text` | Full-text search |
+| GET | `/locations/suggest` | Location autocomplete suggestions |
 
 ### Preferences (`/api/v1/preferences`)
-- `GET /my-preferences` - Get preferences
-- `PUT /my-preferences` - Update preferences
-- `DELETE /my-preferences` - Reset preferences
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/my-preferences` | Get user preferences |
+| PUT | `/my-preferences` | Update preferences |
+| DELETE | `/my-preferences` | Reset to defaults |
 
 ### Saved Jobs (`/api/v1/saved-jobs`)
-- `POST /save` - Bookmark job
-- `GET /my-saved-jobs` - List bookmarks
-- `PATCH /{saved_id}` - Update bookmark
-- `DELETE /{saved_id}` - Remove bookmark
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/save` | Bookmark a job |
+| GET | `/my-saved-jobs` | List bookmarked jobs |
+| PATCH | `/{saved_id}` | Update bookmark (notes, status) |
+| DELETE | `/{saved_id}` | Remove bookmark |
+
+### Feedback (`/api/v1/feedback`)
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/` | Submit feedback (sends email notification) |
 
 ### Admin (`/api/v1/admin`)
-- `POST /trigger-scrape` - Start scraping (requires admin key)
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/trigger-scrape` | Trigger HN scrape (requires admin API key) |
 
 ## Environment Variables
 
-```
-DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/hn_job_board
-SECRET_KEY=your-secret-key
-DEEPSEEK_API_KEY=your-deepseek-key
-ADMIN_API_KEY=your-admin-key
-```
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | Async PostgreSQL URL (`postgresql+asyncpg://...`) |
+| `DATABASE_URL_SYNC` | Sync PostgreSQL URL (for migrations) |
+| `SECRET_KEY` | JWT signing secret |
+| `DEEPSEEK_API_KEY` | DeepSeek API key for AI job parsing |
+| `ADMIN_API_KEY` | Admin endpoint authorization key |
+| `SMTP_HOST` | SMTP server (e.g. `email-smtp.us-east-2.amazonaws.com`) |
+| `SMTP_PORT` | SMTP port (default 587) |
+| `SMTP_USERNAME` | SMTP username (AWS SES credentials) |
+| `SMTP_PASSWORD` | SMTP password |
+| `SMTP_FROM_EMAIL` | Sender email address |
+| `CORS_ORIGINS` | Comma-separated allowed origins |
 
 ## Database Models
 
-- **UserAccount** - User accounts with authentication
-- **JobPosting** - Scraped job postings from HN
-- **UserJobPreferences** - User job search preferences
-- **SavedJob** - Bookmarked jobs with notes
+- **UserAccount** - Users with hashed passwords and email
+- **JobPosting** - Parsed job listings (company, location, tech stack, remote status, visa)
+- **UserJobPreferences** - Search keywords, locations, tech keywords, notification settings
+- **SavedJob** - Bookmarked jobs with notes and application status
 
-## Tech Stack
+## Technology Stack
 
-- FastAPI - Web framework
-- SQLAlchemy 2.0 - Async ORM
-- PostgreSQL - Database
-- DeepSeek API - AI parsing
-- JWT - Authentication
-- Bcrypt - Password hashing
-
-## Development
-
-```bash
-# Run with auto-reload
-uvicorn main:app --reload
-
-# View logs
-python main.py
-
-# Access interactive docs
-http://localhost:8000/docs
-```
+- **FastAPI 0.109** - Async web framework
+- **SQLAlchemy 2.0** - Async ORM with asyncpg
+- **PostgreSQL 15** - Database (AWS RDS)
+- **DeepSeek API** - AI-powered job parsing
+- **APScheduler** - Background job scheduling
+- **python-jose** - JWT tokens
+- **Bcrypt** - Password hashing
+- **AWS SES** - Transactional email
