@@ -21,7 +21,7 @@ export default function ProfileManager() {
     tech_keywords: [],
     remote_preference: false,
     visa_sponsorship_only: false,
-    notification_enabled: true,
+    notification_enabled: false,
   });
   
   const [keywordBuffer, setKeywordBuffer] = useState('');
@@ -97,7 +97,7 @@ export default function ProfileManager() {
         tech_keywords: fetchedConfig.tech_keywords || [],
         remote_preference: fetchedConfig.remote_preference || false,
         visa_sponsorship_only: fetchedConfig.visa_sponsorship_only || false,
-        notification_enabled: fetchedConfig.notification_enabled ?? true,
+        notification_enabled: fetchedConfig.notification_enabled ?? false,
       });
     } catch (fault) {
       console.error('Configuration retrieval fault:', fault);
@@ -269,7 +269,8 @@ export default function ProfileManager() {
                   value={emailBuffer}
                   onChange={(evt) => setEmailBuffer(evt.target.value)}
                   onKeyDown={(evt) => { if (evt.key === 'Enter') executeEmailSave(); }}
-                  className="px-3 py-1 text-sm border-2 border-slate-grey-300 rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all"
+                  placeholder="you@example.com"
+                  className="px-3 py-1 text-sm border-2 border-slate-grey-300 rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all bg-white text-gray-900"
                   autoFocus
                 />
                 <button

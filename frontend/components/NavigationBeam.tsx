@@ -73,7 +73,7 @@ export default function NavigationBeam({ isGuest = false }: NavigationBeamProps)
                     {isGuest && (
                       <Link
                         href="/"
-                        className="px-4 py-2 rounded-lg font-bold bg-[var(--primary)] text-white hover:bg-[var(--primary-dark)] transition-all"
+                        className="px-4 py-2 rounded-lg font-bold bg-smoky-rose-500 text-white hover:bg-smoky-rose-600 transition-all"
                       >
                         <span className="inline-flex items-center gap-2">
                           <i className="bi bi-box-arrow-in-right" aria-hidden="true" />

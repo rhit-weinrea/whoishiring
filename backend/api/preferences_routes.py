@@ -32,7 +32,7 @@ async def fetch_preferences(
         prefs = UserJobPreferences(
             user_account_id=account.user_id,
             remote_only=False,
-            notification_enabled=True
+            notification_enabled=False
         )
         session.add(prefs)
         await session.commit()

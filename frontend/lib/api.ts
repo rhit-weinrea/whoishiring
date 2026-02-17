@@ -236,7 +236,7 @@ export const fetchProfileConfig = async () => {
     tech_keywords: data.preferred_tech_stack || [],
     remote_preference: data.remote_only || false,
     visa_sponsorship_only: data.visa_sponsorship_only || false,
-    notification_enabled: data.notification_enabled ?? true,
+    notification_enabled: data.notification_enabled ?? false,
   };
 };
 

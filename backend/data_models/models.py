@@ -52,7 +52,7 @@ class UserJobPreferences(BaseEntity):
     max_salary = Column(Integer)
     keywords_to_match = Column(ARRAY(String))
     keywords_to_exclude = Column(ARRAY(String))
-    notification_enabled = Column(Boolean, default=True)
+    notification_enabled = Column(Boolean, default=False)
     last_notified_timestamp = Column(DateTime(timezone=True))
     updated_timestamp = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
