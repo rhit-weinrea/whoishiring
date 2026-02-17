@@ -76,7 +76,10 @@
       "Bash(git -C \"C:/Users/weinrea/git/whoishiring\" status --short)",
       "Bash(docker compose:*)",
       "Bash(pip install:*)",
-      "Bash(aws ecr describe-repositories:*)"
+      "Bash(aws ecr describe-repositories:*)",
+      "Bash(git -C \"C:\\\\Users\\\\weinrea\\\\git\\\\whoishiring\" remote -v)",
+      "Bash(aws sts get-caller-identity:*)",
+      "Bash(aws ecs list-clusters:*)"
     ]
   }
 }

@@ -41,7 +41,7 @@ async def fetch_preferences(
     return prefs
 
 
-@pref_api.put("/my-preferences", response_model=PreferencesData)
+@pref_api.put("/my-preferences")
 async def modify_preferences(
     payload: PreferencesPayload,
     session: AsyncSession = Depends(acquire_db_session),
@@ -81,7 +81,8 @@ async def modify_preferences(
     await session.commit()
     await session.refresh(prefs)
 
-    should_confirm = now_enabled and (not was_enabled or prefs.last_notified_timestamp is None)
+    email_status = None
+    should_confirm = now_enabled and not was_enabled
     if should_confirm:
         try:
             since = datetime.now(timezone.utc) - timedelta(days=1)
@@ -92,10 +93,16 @@ async def modify_preferences(
             matched = [j for j in jobs_result.scalars().all() if job_matches_preferences(j, prefs)]
             await send_confirmation_email(account.email_address, matched)
             logger.info("Sent confirmation email to %s with %d match(es)", account.email_address, len(matched))
+            email_status = "sent"
         except Exception as exc:
-            logger.error("Failed to send confirmation email to %s: %s", account.email_address, exc)
+            logger.error("Failed to send confirmation email to %s: %s", account.email_address, exc, exc_info=True)
+            email_status = f"failed: {exc}"
 
-    return prefs
+    prefs_data = PreferencesData.model_validate(prefs)
+    response = prefs_data.model_dump(mode="json")
+    if email_status is not None:
+        response["email_status"] = email_status
+    return response
 
 
 @pref_api.delete("/my-preferences", status_code=status.HTTP_204_NO_CONTENT)

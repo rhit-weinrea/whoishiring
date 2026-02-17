@@ -138,9 +138,15 @@ export default function ProfileManager() {
     try {
       setIsPersisting(true);
       setStatusMessage('');
-      await persistProfileConfig(configuration);
-      setStatusMessage('Configuration persisted.');
-      setTimeout(() => setStatusMessage(''), 3000);
+      const result = await persistProfileConfig(configuration);
+      if (result.email_status === 'sent') {
+        setStatusMessage('Configuration persisted. Confirmation email sent.');
+      } else if (result.email_status && result.email_status.startsWith('failed')) {
+        setStatusMessage(`Configuration persisted, but email failed: ${result.email_status}`);
+      } else {
+        setStatusMessage('Configuration persisted.');
+      }
+      setTimeout(() => setStatusMessage(''), 5000);
     } catch (fault) {
       setStatusMessage('Persistence operation failed.');
       console.error(fault);
