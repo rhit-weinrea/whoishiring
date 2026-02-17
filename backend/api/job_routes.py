@@ -25,7 +25,7 @@ async def browse_postings(
     filters = []
 
     if remote_filter:
-        filters.append(JobPosting.remote_status == remote_filter.lower())
+        filters.append(JobPosting.remote_status.ilike(f"%{remote_filter}%"))
 
     if location_query:
         normalized = normalize_location(location_query)

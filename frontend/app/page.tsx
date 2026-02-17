@@ -2,12 +2,14 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { authenticateViaCredentials } from '@/lib/api';
+import { authenticateViaCredentials, forgeNewAccount } from '@/lib/api';
 import { useTheme } from '@/lib/theme';
 
 export default function LoginPage() {
+  const [isRegistering, setIsRegistering] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const routeController = useRouter();
@@ -20,19 +22,28 @@ export default function LoginPage() {
     }
   }, []);
 
-  const handleLogin = async (evt: FormEvent) => {
+  const handleSubmit = async (evt: FormEvent) => {
     evt.preventDefault();
     setErrorMessage('');
     setIsSubmitting(true);
 
     try {
-      await authenticateViaCredentials(username, password);
+      if (isRegistering) {
+        await forgeNewAccount(email, password, username);
+      } else {
+        await authenticateViaCredentials(username, password);
+      }
       routeController.push('/dashboard');
     } catch (fault: any) {
-      setErrorMessage(fault.message || 'Login failed. Check your credentials.');
+      setErrorMessage(fault.message || (isRegistering ? 'Registration failed.' : 'Login failed. Check your credentials.'));
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const switchMode = () => {
+    setIsRegistering(!isRegistering);
+    setErrorMessage('');
   };
 
   return (
@@ -53,7 +64,9 @@ export default function LoginPage() {
           <div className="text-center mb-8">
             <i className="bi bi-briefcase text-4xl" style={{ color: 'var(--foreground)' }} aria-hidden="true" />
             <h1 className="text-3xl font-black mt-2" style={{ color: 'var(--foreground)' }}>HN Career Hub</h1>
-            <p className="mt-1" style={{ color: 'var(--outline)' }}>Sign in to your account</p>
+            <p className="mt-1" style={{ color: 'var(--foreground)', opacity: 0.7 }}>
+              {isRegistering ? 'Create a new account' : 'Sign in to your account'}
+            </p>
           </div>
 
           {errorMessage && (
@@ -65,7 +78,24 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {isRegistering && (
+              <div>
+                <label className="block text-sm font-bold mb-1" style={{ color: 'var(--foreground)' }}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(evt) => setEmail(evt.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  className="w-full px-4 py-2 rounded-lg border-2 outline-none transition-all"
+                  style={{ background: 'var(--background)', borderColor: 'var(--outline)', color: 'var(--foreground)' }}
+                />
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-bold mb-1" style={{ color: 'var(--foreground)' }}>
                 Username
@@ -89,8 +119,9 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(evt) => setPassword(evt.target.value)}
-                placeholder="Enter your password"
+                placeholder={isRegistering ? 'Min 8 characters' : 'Enter your password'}
                 required
+                minLength={isRegistering ? 8 : undefined}
                 className="w-full px-4 py-2 rounded-lg border-2 outline-none transition-all"
                 style={{ background: 'var(--background)', borderColor: 'var(--outline)', color: 'var(--foreground)' }}
               />
@@ -102,20 +133,31 @@ export default function LoginPage() {
               className="w-full py-3 rounded-lg font-bold text-white transition-all bg-smoky-rose-500 hover:bg-smoky-rose-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="inline-flex items-center gap-2">
-                <i className={`bi ${isSubmitting ? 'bi-hourglass' : 'bi-box-arrow-in-right'}`} aria-hidden="true" />
-                {isSubmitting ? 'Signing in...' : 'Sign In'}
+                <i className={`bi ${isSubmitting ? 'bi-hourglass' : isRegistering ? 'bi-person-plus' : 'bi-box-arrow-in-right'}`} aria-hidden="true" />
+                {isSubmitting
+                  ? (isRegistering ? 'Creating account...' : 'Signing in...')
+                  : (isRegistering ? 'Create Account' : 'Sign In')}
               </span>
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <a
-              href="/dashboard"
+          <div className="mt-6 text-center space-y-2">
+            <button
+              onClick={switchMode}
               className="text-sm font-semibold transition-all hover:underline"
-              style={{ color: 'var(--outline)' }}
+              style={{ color: 'var(--foreground)', opacity: 0.7 }}
             >
-              Continue as guest
-            </a>
+              {isRegistering ? 'Already have an account? Sign in' : "Don't have an account? Create one"}
+            </button>
+            <div>
+              <a
+                href="/dashboard"
+                className="text-sm font-semibold transition-all hover:underline"
+                style={{ color: 'var(--foreground)', opacity: 0.7 }}
+              >
+                Continue as guest
+              </a>
+            </div>
           </div>
         </div>
       </div>

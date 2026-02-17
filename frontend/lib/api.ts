@@ -109,17 +109,17 @@ export const authenticateViaCredentials = async (username: string, password: str
   return outcome;
 };
 
-// export const forgeNewAccount = async (mailAddress: string, secretCode: string, alias: string) => {
-//   const outcome = await bridge.transmit('/auth/register', 'POST', { 
-//     email_address: mailAddress, 
-//     password: secretCode, 
-//     username: alias 
-//   });
-//   if (outcome.access_token) {
-//     bridge.archiveSession(outcome.access_token);
-//   }
-//   return outcome;
-// };
+export const forgeNewAccount = async (email: string, password: string, username: string) => {
+  const outcome = await bridge.transmit('/auth/register', 'POST', {
+    email_address: email,
+    password,
+    username
+  });
+  if (outcome.access_token) {
+    bridge.archiveSession(outcome.access_token);
+  }
+  return outcome;
+};
 
 export const terminateSession = (): void => {
   bridge.eraseSession();

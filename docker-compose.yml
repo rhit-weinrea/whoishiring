@@ -11,7 +11,7 @@ services:
       - "5432:5432"
 
   api:
-    image: hn-backend
+    build: ./backend
     env_file:
       - backend/.env.docker
     depends_on:

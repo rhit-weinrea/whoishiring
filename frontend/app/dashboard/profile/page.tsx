@@ -297,11 +297,7 @@ export default function ProfileManager() {
           </button>
         </div>
 
-        {statusMessage && (
-          <div className="mb-6 p-4 bg-white border-2 border-green-500 rounded text-green-800 font-medium">
-            {statusMessage}
-          </div>
-        )}
+        
 
         <div className="space-y-6">
           {/* Keywords Section */}
@@ -511,7 +507,11 @@ export default function ProfileManager() {
             </label>
 
           </div>
-
+              {statusMessage && (
+          <div className="mb-6 p-4 bg-white border-2 border-green-500 rounded text-green-800 font-medium">
+            {statusMessage}
+          </div>
+        )}
           {/* Save Button */}
           <button
             onClick={executeConfigSave}
@@ -520,7 +520,7 @@ export default function ProfileManager() {
           >
             <span className="inline-flex items-center gap-2">
               <i className="bi bi-save" aria-hidden="true" />
-              {isPersisting ? 'Persisting...' : 'Persist configuration'}
+              {isPersisting ? 'Saving...' : 'Save Settings'}
             </span>
           </button>
         </div>
