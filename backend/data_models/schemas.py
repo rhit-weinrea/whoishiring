@@ -44,7 +44,7 @@ class PreferencesPayload(BaseModel):
     max_salary: Optional[int] = None
     keywords_to_match: Optional[List[str]] = None
     keywords_to_exclude: Optional[List[str]] = None
-    notification_enabled: bool = True
+    notification_enabled: bool = False
     last_notified_timestamp: Optional[datetime] = None
 
 

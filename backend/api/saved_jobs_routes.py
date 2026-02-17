@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from typing import List
 from backend.core.database_engine import acquire_db_session
 from backend.data_models.schemas import (
@@ -54,7 +55,9 @@ async def bookmark_job(
     await session.refresh(bookmark)
     
     result = await session.execute(
-        select(SavedJob).where(SavedJob.saved_id == bookmark.saved_id)
+        select(SavedJob)
+        .where(SavedJob.saved_id == bookmark.saved_id)
+        .options(selectinload(SavedJob.posting_rel))
     )
     return result.scalar_one()
 
@@ -67,11 +70,13 @@ async def list_bookmarks(
     session: AsyncSession = Depends(acquire_db_session),
     account: UserAccount = Depends(extract_current_user)
 ):
-    stmt = select(SavedJob).where(SavedJob.user_account_id == account.user_id)
-    
+    stmt = select(SavedJob).where(
+        SavedJob.user_account_id == account.user_id
+    ).options(selectinload(SavedJob.posting_rel))
+
     if applied_only:
         stmt = stmt.where(SavedJob.applied_status == True)
-    
+
     stmt = stmt.order_by(SavedJob.saved_timestamp.desc()).offset(skip).limit(limit)
     
     result = await session.execute(stmt)
@@ -90,25 +95,25 @@ async def update_bookmark(
     stmt = select(SavedJob).where(
         SavedJob.saved_id == saved_id,
         SavedJob.user_account_id == account.user_id
-    )
+    ).options(selectinload(SavedJob.posting_rel))
     result = await session.execute(stmt)
     bookmark = result.scalar_one_or_none()
-    
+
     if not bookmark:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Bookmark not found"
         )
-    
+
     if payload.notes is not None:
         bookmark.notes = payload.notes
-    
+
     if payload.applied_status is not None:
         bookmark.applied_status = payload.applied_status
-    
+
     await session.commit()
-    await session.refresh(bookmark)
-    
+    await session.refresh(bookmark, attribute_names=["posting_rel"])
+
     return bookmark
 
 
