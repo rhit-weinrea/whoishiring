@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -39,6 +40,8 @@ def verify_password(password: str, hashed_password: str) -> bool:
 # Authentication helpers
 # ------------------------------------------------------------------
 
+logger = logging.getLogger(__name__)
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
@@ -52,9 +55,11 @@ async def validate_credentials(
     account = result.scalar_one_or_none()
 
     if not account:
+        logger.warning("Credential validation failed: username not found (username=%s)", username)
         return None
 
     if not verify_password(password, account.hashed_password):
+        logger.warning("Credential validation failed: incorrect password (username=%s)", username)
         return None
 
     return account
