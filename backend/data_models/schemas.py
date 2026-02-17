@@ -92,7 +92,7 @@ class BookmarkedJobData(BaseModel):
     saved_timestamp: datetime
     notes: Optional[str]
     applied_status: bool
-    posting_rel: JobData
+    posting_rel: Optional[JobData] = None
     
     class Config:
         from_attributes = True

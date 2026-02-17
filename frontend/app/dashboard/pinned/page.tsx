@@ -65,22 +65,22 @@ export default function PinnedCollection() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+    <div className="min-h-screen bg-[var(--background)]">
       <NavigationBeam />
-      
+
       <main className="container mx-auto px-6 py-8">
         <div className="mb-8">
-          <h2 className="text-4xl font-black text-gray-900 mb-2 flex items-center gap-2">
+          <h2 className="text-4xl font-black text-[var(--foreground)] mb-2 flex items-center gap-2">
             <i className="bi bi-star" aria-hidden="true" />
             Pinned Collection
           </h2>
-          <p className="text-gray-600">
+          <p className="text-[var(--muted)]">
             Your preserved listings for reference
           </p>
         </div>
 
         {faultMessage && (
-          <div className="mb-6 p-4 bg-white border-2 border-red-500 rounded text-red-800">
+          <div className="mb-6 p-4 bg-[var(--surface)] border-2 border-red-500 rounded text-red-800">
             <span className="inline-flex items-center gap-2">
               <i className="bi bi-exclamation-triangle" aria-hidden="true" />
               {faultMessage}
@@ -94,16 +94,16 @@ export default function PinnedCollection() {
               <div className="text-6xl mb-4 animate-bounce">
                 <i className="bi bi-hourglass" aria-hidden="true" />
               </div>
-              <p className="text-gray-600 font-bold">Retrieving pins...</p>
+              <p className="text-[var(--muted)] font-bold">Retrieving pins...</p>
             </div>
           </div>
         ) : pinnedRecords.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-xl border-2 border-slate-grey-200">
+          <div className="text-center py-16 bg-[var(--surface)] rounded-xl border-2 border-[var(--outline)]">
             <div className="text-6xl mb-4">
               <i className="bi bi-book" aria-hidden="true" />
             </div>
-            <p className="text-xl text-gray-600 font-bold">Collection empty</p>
-            <p className="text-gray-500 mt-2">Pin listings from the browser</p>
+            <p className="text-xl text-[var(--muted)] font-bold">Collection empty</p>
+            <p className="text-[var(--muted)] mt-2">Pin listings from the browser</p>
             <button
               onClick={() => routeController.push('/dashboard')}
               className="mt-6 bg-smoky-rose-500 text-white px-6 py-3 rounded-lg font-bold transition-all border-2 border-smoky-rose-500"
@@ -113,7 +113,7 @@ export default function PinnedCollection() {
           </div>
         ) : (
           <div>
-            <div className="mb-4 text-gray-600 font-semibold">
+            <div className="mb-4 text-[var(--muted)] font-semibold">
               {pinnedRecords.length} {pinnedRecords.length === 1 ? 'item' : 'items'} pinned
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

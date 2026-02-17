@@ -114,37 +114,54 @@ export default function ListingBrowser() {
 
   const executePinToggle = async (listingId: number) => {
     if (isGuest) return;
+    const wasPinned = pinnedSet.has(listingId);
+
+    // Optimistic update
+    if (wasPinned) {
+      setPinnedSet(prev => {
+        const next = new Set(prev);
+        next.delete(listingId);
+        return next;
+      });
+    } else {
+      setPinnedSet(prev => new Set(prev).add(listingId));
+    }
+
     try {
-      if (pinnedSet.has(listingId)) {
+      if (wasPinned) {
         const savedId = pinnedMap.get(listingId);
         if (!savedId) {
           await loadPinnedData();
           return;
         }
         await unpinListing(savedId);
-        setPinnedSet(previousSet => {
-          const modifiedSet = new Set(previousSet);
-          modifiedSet.delete(listingId);
-          return modifiedSet;
-        });
-        setPinnedMap(previousMap => {
-          const modifiedMap = new Map(previousMap);
-          modifiedMap.delete(listingId);
-          return modifiedMap;
+        setPinnedMap(prev => {
+          const next = new Map(prev);
+          next.delete(listingId);
+          return next;
         });
       } else {
         const saved = await pinListing(listingId);
-        setPinnedSet(previousSet => new Set(previousSet).add(listingId));
         if (saved?.saved_id) {
-          setPinnedMap(previousMap => {
-            const modifiedMap = new Map(previousMap);
-            modifiedMap.set(listingId, saved.saved_id);
-            return modifiedMap;
+          setPinnedMap(prev => {
+            const next = new Map(prev);
+            next.set(listingId, saved.saved_id);
+            return next;
           });
         }
       }
-    } catch (fault) {
+    } catch (fault: any) {
       console.error('Pin toggle fault:', fault);
+      // Revert optimistic update on failure
+      if (wasPinned) {
+        setPinnedSet(prev => new Set(prev).add(listingId));
+      } else {
+        setPinnedSet(prev => {
+          const next = new Set(prev);
+          next.delete(listingId);
+          return next;
+        });
+      }
     }
   };
 
@@ -243,7 +260,7 @@ export default function ListingBrowser() {
     <button
       onClick={() => setPageNumber(p => Math.max(1, p - 1))}
       disabled={pageNumber === 1}
-      className="px-4 py-2 rounded-lg font-bold border-2 border-slate-grey-200 bg-white text-gray-700 hover:border-smoky-rose-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+      className="px-4 py-2 rounded-lg font-bold border-2 border-[var(--outline)] bg-[var(--surface)] text-[var(--foreground)] hover:border-smoky-rose-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
     >
       <i className="bi bi-chevron-left" aria-hidden="true" />
     </button>
@@ -256,7 +273,7 @@ export default function ListingBrowser() {
       }, [])
       .map((p, idx) =>
         typeof p === 'string' ? (
-          <span key={`ellipsis-${idx}`} className="px-2 text-gray-400 font-bold">...</span>
+          <span key={`ellipsis-${idx}`} className="px-2 text-[var(--muted)] font-bold">...</span>
         ) : (
           <button
             key={p}
@@ -264,7 +281,7 @@ export default function ListingBrowser() {
             className={`px-4 py-2 rounded-lg font-bold border-2 transition-all ${
               p === pageNumber
                 ? 'bg-smoky-rose-500 text-white border-smoky-rose-500'
-                : 'bg-white text-gray-700 border-slate-grey-200 hover:border-smoky-rose-500'
+                : 'bg-[var(--surface)] text-[var(--foreground)] border-[var(--outline)] hover:border-smoky-rose-500'
             }`}
           >
             {p}
@@ -274,7 +291,7 @@ export default function ListingBrowser() {
     <button
       onClick={() => setPageNumber(p => Math.min(totalPages, p + 1))}
       disabled={pageNumber === totalPages}
-      className="px-4 py-2 rounded-lg font-bold border-2 border-slate-grey-200 bg-white text-gray-700 hover:border-smoky-rose-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+      className="px-4 py-2 rounded-lg font-bold border-2 border-[var(--outline)] bg-[var(--surface)] text-[var(--foreground)] hover:border-smoky-rose-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
     >
       <i className="bi bi-chevron-right" aria-hidden="true" />
     </button>

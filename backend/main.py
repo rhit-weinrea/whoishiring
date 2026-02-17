@@ -1,6 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
+import traceback
 from backend.core.configuration import fetch_environment_config
 from backend.core.database_engine import setup_database_schema, teardown_database
 from backend.api.authentication_routes import auth_api
@@ -51,6 +53,15 @@ app.include_router(bookmark_api, prefix="/api/v1")
 app.include_router(scraper_api, prefix="/api/v1")
 app.include_router(location_api, prefix="/api/v1")
 app.include_router(notification_api, prefix="/api/v1")
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    traceback.print_exc()
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error"},
+    )
 
 
 @app.get("/")

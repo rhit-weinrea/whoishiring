@@ -81,8 +81,8 @@ async def list_bookmarks(
     
     result = await session.execute(stmt)
     bookmarks = result.scalars().all()
-    
-    return bookmarks
+
+    return [b for b in bookmarks if b.posting_rel is not None]
 
 
 @bookmark_api.patch("/{saved_id}", response_model=BookmarkedJobData)
