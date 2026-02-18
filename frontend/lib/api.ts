@@ -88,8 +88,8 @@ class NetworkBridge {
     const reply = await fetch(`${API_ROOT}${endpoint}`, requestConfig);
     
     if (!reply.ok) {
-      const fault = await reply.json().catch(() => ({ message: 'Unknown error' }));
-      throw new Error(fault.message || `Network fault: ${reply.status}`);
+      const fault = await reply.json().catch(() => ({ detail: 'Unknown error' }));
+      throw new Error(fault.detail || fault.message || `Network fault: ${reply.status}`);
     }
 
     return reply.json();

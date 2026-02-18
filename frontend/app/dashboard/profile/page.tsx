@@ -314,15 +314,15 @@ export default function ProfileManager() {
                 onChange={(evt) => setKeywordBuffer(evt.target.value)}
                 onKeyPress={handleKeywordEnter}
                 placeholder="JavaScript, Rust, Data..."
-                className="flex-1 px-4 py-2 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all"
+                className="flex-1 min-w-0 px-4 py-2 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all"
               />
               <button
                 onClick={appendKeyword}
-                className="bg-smoky-rose-500 text-white px-6 py-2 rounded-lg font-bold transition-all border-2 border-smoky-rose-500"
+                className="bg-smoky-rose-500 text-white px-3 sm:px-6 py-2 rounded-lg font-bold transition-all border-2 border-smoky-rose-500 shrink-0"
               >
                 <span className="inline-flex items-center gap-2">
                   <i className="bi bi-plus" aria-hidden="true" />
-                  Append
+                  <span className="hidden sm:inline">Append</span>
                 </span>
               </button>
             </div>
@@ -360,15 +360,15 @@ export default function ProfileManager() {
                 onChange={(evt) => setLocationBuffer(evt.target.value)}
                 onKeyPress={handleLocationEnter}
                 placeholder="Austin, London, Tokyo..."
-                className="flex-1 px-4 py-2 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all"
+                className="flex-1 min-w-0 px-4 py-2 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all"
               />
               <button
                 onClick={appendLocation}
-                className="bg-smoky-rose-500 text-white px-6 py-2 rounded-lg font-bold transition-all border-2 border-smoky-rose-500"
+                className="bg-smoky-rose-500 text-white px-3 sm:px-6 py-2 rounded-lg font-bold transition-all border-2 border-smoky-rose-500 shrink-0"
               >
                 <span className="inline-flex items-center gap-2">
                   <i className="bi bi-plus" aria-hidden="true" />
-                  Append
+                  <span className="hidden sm:inline">Append</span>
                 </span>
               </button>
             </div>
@@ -428,15 +428,15 @@ export default function ProfileManager() {
                 onChange={(evt) => setTechBuffer(evt.target.value)}
                 onKeyPress={handleTechEnter}
                 placeholder="Python, Next.js, AWS..."
-                className="flex-1 px-4 py-2 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all"
+                className="flex-1 min-w-0 px-4 py-2 border-2 border-[var(--outline)] rounded-lg focus:ring-2 focus:ring-smoky-rose-200 focus:border-smoky-rose-500 outline-none transition-all"
               />
               <button
                 onClick={appendTechKeyword}
-                className="bg-smoky-rose-500 text-white px-6 py-2 rounded-lg font-bold transition-all border-2 border-smoky-rose-500"
+                className="bg-smoky-rose-500 text-white px-3 sm:px-6 py-2 rounded-lg font-bold transition-all border-2 border-smoky-rose-500 shrink-0"
               >
                 <span className="inline-flex items-center gap-2">
                   <i className="bi bi-plus" aria-hidden="true" />
-                  Append
+                  <span className="hidden sm:inline">Append</span>
                 </span>
               </button>
             </div>
