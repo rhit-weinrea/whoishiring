@@ -72,7 +72,10 @@ export default function ListingBrowser() {
       });
       setListings(filtered);
       setTotalJobs(filtered.length);
-      setTotalPages(Math.ceil(filtered.length / numJobsPerPage));
+      setPageNumber(1);
+      const perPage = filtered.length < numJobsPerPage ? filtered.length || 1 : numJobsPerPage;
+      setNumJobsPerPage(perPage);
+      setTotalPages(Math.ceil(filtered.length / perPage));
       if (typeof window !== 'undefined') sessionStorage.removeItem('hn_reload_count');
     } catch (fault) {
       console.error(fault);
