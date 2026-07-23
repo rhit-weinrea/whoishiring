@@ -1,178 +1,210 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
-import { authenticateViaCredentials, forgeNewAccount } from '@/lib/api';
-import { useTheme } from '@/lib/theme';
+import { useState, useEffect } from 'react';
+import NavigationBeam from '@/components/NavigationBeam';
+import EmploymentCard from '@/components/EmploymentCard';
+import QueryRefinery from '@/components/QueryRefinery';
+import { queryEmploymentListings } from '@/lib/api';
 
-export default function LoginPage() {
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [email, setEmail] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const routeController = useRouter();
-  const { isDark, toggleTheme } = useTheme();
+type EmploymentListing = {
+  id: number;
+  hnItemId?: string;
+  title: string;
+  company: string;
+  location: string;
+  description: string;
+  posted_at: string;
+  url?: string;
+  remote?: boolean;
+  salary?: string;
+  tech?: string[];
+};
+
+export default function JobBoard() {
+  const [listings, setListings] = useState<EmploymentListing[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [faultMessage, setFaultMessage] = useState('');
+  const [pageNumber, setPageNumber] = useState(1);
+  const [numJobsPerPage, setNumJobsPerPage] = useState(10);
+  const [totalJobs, setTotalJobs] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    const sessionTicket = localStorage.getItem('hn_session_vault');
-    if (sessionTicket) {
-      routeController.push('/dashboard');
-    }
+    loadListingsData();
   }, []);
 
-  const handleSubmit = async (evt: FormEvent) => {
-    evt.preventDefault();
-    setErrorMessage('');
-    setIsSubmitting(true);
-
+  const loadListingsData = async (criteria?: any) => {
     try {
-      if (isRegistering) {
-        await forgeNewAccount(email, password, username);
-      } else {
-        await authenticateViaCredentials(username, password);
+      setIsLoadingData(true);
+      setFaultMessage('');
+      const fetchedData = await queryEmploymentListings(criteria);
+      const visaFilter = criteria?.visaSponsorship ? 'yes' : null;
+      const techFilter = Array.isArray(criteria?.techKeywords) && criteria.techKeywords.length > 0
+        ? criteria.techKeywords.map((item: string) => item.toLowerCase())
+        : null;
+      const filtered = fetchedData.filter((listing: any) => {
+        const text = (listing.description || '').toLowerCase();
+        if (visaFilter && !text.includes(`visa sponsorship: ${visaFilter}`)) {
+          return false;
+        }
+        if (techFilter) {
+          return techFilter.some((keyword: string) => text.includes(keyword));
+        }
+        return true;
+      });
+      setListings(filtered);
+      setTotalJobs(filtered.length);
+      setPageNumber(1);
+      const perPage = filtered.length < numJobsPerPage ? filtered.length || 1 : numJobsPerPage;
+      setNumJobsPerPage(perPage);
+      setTotalPages(Math.ceil(filtered.length / perPage));
+      if (typeof window !== 'undefined') sessionStorage.removeItem('hn_reload_count');
+    } catch (fault) {
+      console.error(fault);
+      if (!criteria && typeof window !== 'undefined') {
+        const retries = Number(sessionStorage.getItem('hn_reload_count') || '0');
+        if (retries < 2) {
+          sessionStorage.setItem('hn_reload_count', String(retries + 1));
+          window.location.reload();
+          return;
+        }
       }
-      routeController.push('/dashboard');
-    } catch (fault: any) {
-      setErrorMessage(fault.message || (isRegistering ? 'Registration failed.' : 'Login failed. Check your credentials.'));
+      setFaultMessage('Data retrieval fault. Retry suggested.');
     } finally {
-      setIsSubmitting(false);
+      setIsLoadingData(false);
     }
   };
 
-  const switchMode = () => {
-    setIsRegistering(!isRegistering);
-    setErrorMessage('');
+  const applyCriteria = (criteria: any) => {
+    loadListingsData(criteria);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
-      <div className="absolute top-4 right-4">
-        <button
-          onClick={toggleTheme}
-          className="px-3 py-2 rounded-lg transition-all hover:bg-[var(--muted-light)]"
-          style={{ color: 'var(--foreground)' }}
-          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          <i className={`bi ${isDark ? 'bi-sun-fill' : 'bi-moon-fill'} text-lg`} aria-hidden="true" />
-        </button>
-      </div>
+    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
+      <NavigationBeam />
 
-      <div className="w-full max-w-md px-6">
-        <div className="rounded-xl p-8 border-2" style={{ background: 'var(--surface)', borderColor: 'var(--outline)' }}>
-          <div className="text-center mb-8">
-            <i className="bi bi-briefcase text-4xl" style={{ color: 'var(--foreground)' }} aria-hidden="true" />
-            <h1 className="text-3xl font-black mt-2" style={{ color: 'var(--foreground)' }}>HN Career Hub</h1>
-            <p className="mt-1" style={{ color: 'var(--foreground)', opacity: 0.7 }}>
-              {isRegistering ? 'Create a new account' : 'Sign in to your account'}
-            </p>
+      <main className="container mx-auto px-6 py-8">
+        <div className="mb-8">
+          <h2 className="text-4xl font-black mb-2 flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
+            <i className="bi bi-list" aria-hidden="true" />
+            Browse Listings
+          </h2>
+          <p style={{ color: 'var(--foreground)' }}>
+            Discover opportunities from Hacker News community
+          </p>
+        </div>
+
+        <QueryRefinery onCriteriaUpdate={applyCriteria} />
+
+        {faultMessage && (
+          <div className="mb-6 p-4 rounded" style={{ background: 'var(--background)', border: '2px solid red', color: 'red' }}>
+            <span className="inline-flex items-center gap-2">
+              <i className="bi bi-exclamation-triangle" aria-hidden="true" />
+              {faultMessage}
+            </span>
           </div>
+        )}
 
-          {errorMessage && (
-            <div className="mb-4 p-3 rounded-lg border-2 text-sm font-medium" style={{ borderColor: 'red', color: 'red', background: 'var(--background)' }}>
-              <span className="inline-flex items-center gap-2">
-                <i className="bi bi-exclamation-triangle" aria-hidden="true" />
-                {errorMessage}
-              </span>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {isRegistering && (
-              <div>
-                <label className="block text-sm font-bold mb-1" style={{ color: 'var(--foreground)' }}>
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(evt) => setEmail(evt.target.value)}
-                  placeholder="you@example.com"
-                  required
-                  className="w-full px-4 py-2 rounded-lg border-2 outline-none transition-all"
-                  style={{ background: 'var(--background)', borderColor: 'var(--outline)', color: 'var(--foreground)' }}
-                />
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-bold mb-1" style={{ color: 'var(--foreground)' }}>
-                Username
-              </label>
-              <input
-                type="text"
-                value={username}
-                onChange={(evt) => setUsername(evt.target.value)}
-                placeholder="Enter your username"
-                required
-                className="w-full px-4 py-2 rounded-lg border-2 outline-none transition-all"
-                style={{ background: 'var(--background)', borderColor: 'var(--outline)', color: 'var(--foreground)' }}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold mb-1" style={{ color: 'var(--foreground)' }}>
-                Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(evt) => setPassword(evt.target.value)}
-                placeholder={isRegistering ? 'Min 8 characters' : 'Enter your password'}
-                required
-                minLength={isRegistering ? 8 : undefined}
-                className="w-full px-4 py-2 rounded-lg border-2 outline-none transition-all"
-                style={{ background: 'var(--background)', borderColor: 'var(--outline)', color: 'var(--foreground)' }}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3 rounded-lg font-bold text-white transition-all bg-smoky-rose-500 hover:bg-smoky-rose-600 disabled:opacity-50 disabled:cursor-not-allowed"
+        <div className="flex justify-between items-center my-4">
+          <span className="text-lg font-bold flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
+            <i className="bi bi-briefcase" aria-hidden="true" />
+            {totalJobs} Job{totalJobs !== 1 ? 's' : ''}
+          </span>
+          <div className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: 'var(--background)', border: `2px solid var(--outline)`, color: 'var(--foreground)' }}>
+            <span>Show</span>
+            <select
+              value={numJobsPerPage}
+              onChange={e => {
+                const value = e.target.value === 'all' ? totalJobs : Number(e.target.value);
+                setNumJobsPerPage(value);
+                setPageNumber(1);
+                setTotalPages(Math.ceil(totalJobs / (value === 0 ? 1 : value)));
+              }}
+              className="px-2 py-1 rounded-lg font-bold focus:outline-none transition-all"
+              style={{ background: 'var(--background)', border: `2px solid var(--outline)`, color: 'var(--foreground)' }}
             >
-              <span className="inline-flex items-center gap-2">
-                <i className={`bi ${isSubmitting ? 'bi-hourglass' : isRegistering ? 'bi-person-plus' : 'bi-box-arrow-in-right'}`} aria-hidden="true" />
-                {isSubmitting
-                  ? (isRegistering ? 'Creating account...' : 'Signing in...')
-                  : (isRegistering ? 'Create Account' : 'Sign In')}
-              </span>
-            </button>
-          </form>
-
-          {!isRegistering && (
-            <div className="mt-3 text-right">
-              <a
-                href="/forgot-password"
-                className="text-sm font-semibold transition-all hover:underline"
-                style={{ color: 'var(--foreground)', opacity: 0.7 }}
-              >
-                Forgot your password?
-              </a>
-            </div>
-          )}
-
-          <div className="mt-6 text-center space-y-2">
-            <button
-              onClick={switchMode}
-              className="text-sm font-semibold transition-all hover:underline"
-              style={{ color: 'var(--foreground)', opacity: 0.7 }}
-            >
-              {isRegistering ? 'Already have an account? Sign in' : "Don't have an account? Create one"}
-            </button>
-            <div>
-              <a
-                href="/dashboard"
-                className="text-sm font-semibold transition-all hover:underline"
-                style={{ color: 'var(--foreground)', opacity: 0.7 }}
-              >
-                Continue as guest
-              </a>
-            </div>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={totalJobs}>All</option>
+            </select>
+            <span>per page</span>
           </div>
         </div>
-      </div>
+
+        {isLoadingData ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="text-center">
+              <div className="text-6xl mb-4 animate-bounce" style={{ color: 'var(--foreground)' }}>
+                <i className="bi bi-hourglass" aria-hidden="true" />
+              </div>
+              <p style={{ color: 'var(--outline)', fontWeight: 'bold' }}>Loading listings...</p>
+            </div>
+          </div>
+        ) : listings.length === 0 ? (
+          <div className="text-center py-16 rounded-lg" style={{ border: `2px solid var(--outline)`, background: 'var(--background)' }}>
+            <div className="text-6xl mb-4" style={{ color: 'var(--foreground)' }}>
+              <i className="bi bi-search" aria-hidden="true" />
+            </div>
+            <p className="text-xl font-bold" style={{ color: 'var(--outline)' }}>Zero matches found</p>
+            <p style={{ color: 'var(--outline)', marginTop: '0.5rem' }}>Adjust your search criteria</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {listings.slice((pageNumber - 1) * numJobsPerPage, pageNumber * numJobsPerPage).map((listing) => (
+                <EmploymentCard
+                  key={`${listing.id}-${listing.title}`}
+                  listing={listing}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-8">
+            <button
+              onClick={() => setPageNumber(p => Math.max(1, p - 1))}
+              disabled={pageNumber === 1}
+              className="px-4 py-2 rounded-lg font-bold border-2 border-[var(--outline)] bg-[var(--surface)] text-[var(--foreground)] hover:border-smoky-rose-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <i className="bi bi-chevron-left" aria-hidden="true" />
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(p => p === 1 || p === totalPages || Math.abs(p - pageNumber) <= 1)
+              .reduce<(number | string)[]>((acc, p, idx, arr) => {
+                if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push('...');
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((p, idx) =>
+                typeof p === 'string' ? (
+                  <span key={`ellipsis-${idx}`} className="px-2 text-[var(--muted)] font-bold">...</span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => setPageNumber(p)}
+                    className={`px-4 py-2 rounded-lg font-bold border-2 transition-all ${
+                      p === pageNumber
+                        ? 'bg-smoky-rose-500 text-white border-smoky-rose-500'
+                        : 'bg-[var(--surface)] text-[var(--foreground)] border-[var(--outline)] hover:border-smoky-rose-500'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                )
+              )}
+            <button
+              onClick={() => setPageNumber(p => Math.min(totalPages, p + 1))}
+              disabled={pageNumber === totalPages}
+              className="px-4 py-2 rounded-lg font-bold border-2 border-[var(--outline)] bg-[var(--surface)] text-[var(--foreground)] hover:border-smoky-rose-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <i className="bi bi-chevron-right" aria-hidden="true" />
+            </button>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
